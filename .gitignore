@@ -1,0 +1,38 @@
+
+# LaTeX, pdf
+*.aux
+*.bbl
+*.blg
+*.dvi
+*.log
+*.flc
+*.nav
+*.out
+*.rip
+*.snm
+*.spl
+*.toc
+*.vrb
+*synctex*
+*.pdfsync
+
+
+# Emacs
+*.el
+*~
+auto/
+_region_*
+prv*.fmt
+prv*.pdf
+
+
+# svn
+.svn/
+
+# Mac
+.DS_store
+
+
+pmbs2020-*
+
+
