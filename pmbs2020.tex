@@ -1,0 +1,602 @@
+\renewcommand{\encodingdefault}{OT1}
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{multirow}
+\usepackage[Procedure]{algorithm}
+%\usepackage{algorithmic}
+\usepackage[noend]{algpseudocode}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\definecolor{orange}{rgb}{1,0.5,0}
+\newcommand{\p}[1]{{\color{blue} Pdj: #1}}
+\newcommand{\as}[1]{{\color{red} a: #1}}
+\newcommand{\ar}[1]{{\color{red}#1}}
+\usepackage{ulem}  % strike through  \sout{ }
+\usepackage{url}
+\begin{document}
+
+\title{Robust Ranking of Linear Algebra Algorithms via Relative Performance\\
+%{\footnotesize \textsuperscript{*}Note: Sub-titles are not captured in Xplore and
+%should not be used}
+\thanks{Identify applicable funding agency here. If none, delete this.}
+}
+
+\author{\IEEEauthorblockN{Aravind Sankaran}
+\IEEEauthorblockA{\textit{AICES} \\
+\textit{RWTH Aachen University}\\
+Aachen, Germany \\
+aravind.sankaran@rwth-aachen.de}
+%\and
+% \IEEEauthorblockN{Christos Psarras}
+%\IEEEauthorblockA{\textit{AICES} \\
+%	\textit{RWTH Aachen University}\\
+%	Aachen, Germany \\
+%psarras@aices.rwth-aachen.de}
+\and
+\IEEEauthorblockN{Paolo Bientinesi}
+\IEEEauthorblockA{\textit{Department of Computer Science} \\
+\textit{Ume\r{a} Universitet}\\
+Ume\r{a}, Sweden \\
+pauldj@cs.umu.se}
+%\and
+%\IEEEauthorblockN{4\textsuperscript{th} Given Name Surname}
+%\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+%\textit{name of organization (of Aff.)}\\
+%City, Country \\
+%email address or ORCID}
+%\and
+%\IEEEauthorblockN{5\textsuperscript{th} Given Name Surname}
+%\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+%\textit{name of organization (of Aff.)}\\
+%City, Country \\
+%email address or ORCID}
+%\and
+%\IEEEauthorblockN{6\textsuperscript{th} Given Name Surname}
+%\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+%\textit{name of organization (of Aff.)}\\
+%City, Country \\
+%email address or ORCID}
+}
+
+\maketitle
+
+\begin{abstract}
+
+  For a given linear algebra problem, we consider those Solution algorithms that are mathematically equivalent to one
+  another, and that mostly consist of a sequence of calls to kernels from optimized libraries such as BLAS and
+  LAPACK. Althogh equivalent (at least in exact precision), those algorithms typically exhibit significant differences
+  in terms of performance, and naturally, we are interested in finding the fastest one(s). In practice, we often observe
+  that multiple algorithms yield comparable performance characteristics. Therefore, we aim to identify the subset of algorithms that are reliably faster than the rest. To this end, instead of quantifying the performance of an
+  algorithm in absolute terms, we present a measurement-based approach that assigns a relative score to the algorithms
+  in comparison to one another. The relative performance is encoded by sorting the algorithms based on pair-wise
+  comparisons and ranking them into equivalence classes, where more than one algorithm can obtain the same rank. We show
+  that the relative performance leads to reliable identification of the fastest algorithms even with noisy system
+  conditions.
+%  Furthermore, in comparison to other metrics that quantify the performance of an algorithm in absolute
+%  terms, we show that with relative performance, the fastest algorithms can be identified with fewer measurements.
+  \\[4mm]
+
+
+\end{abstract}
+
+\begin{IEEEkeywords}
+\textbf{performance modelling, benchmarking, sampling}
+\end{IEEEkeywords}
+
+%\p{
+%  \begin{enumerate}
+%  \item The conference is PMBS, not PMBC
+%  \item Christos as co-author if we include MTTKRP, otherwise not.
+
+%  \end{enumerate}
+%}
+
+\section{Introduction}
+
+%\p{you are on top of all of this, aren't you?
+%  \url{https://www.dcs.warwick.ac.uk/pmbs/pmbs/PMBS/Submit.html}
+%}
+
+Given a set $\mathcal{A}$ of mathematically equivalent linear algebra algorithms, we aim to identify the subset
+$\mathcal{F} \subseteq \mathcal{A}$ containing all those algorithms that are ``equivalently'' fast to one another, and
+``noticeably'' faster than any algorithm in the subset $\mathcal{A}/\mathcal{F}$. We clarify the meaning of ``equivalent'' and
+``noticeable'' later in this section; for now, we simply state that in order to identify $\mathcal{F}$, 
+we develop an approach that assigns a higher score to the algorithms in
+$\mathcal{F}$ compared to those in $\mathcal{A}/\mathcal{F}$. Instead of aiming for a value that captures the quality of an algorithm in absolute terms, we seek to compute a relative score that compares the current algorithm with respect to the fastest algorithm(s) in $\mathcal{A}$. We refer to such scores as ``relative performance estimates''.
+
+It is well known that execution times are influenced by many factors, and that repeated measurements, even with same input data and same cache conditions, often result in different execution times\cite{peise2014cache} \cite{hoefler2010characterizing} \cite{peise2012performance}. Therefore, finding the best algorithm is a task that involves comparing distributions of execution time.
+%
+In common practice, time measurements are summarized into statistical estimates (such as minimum or median execution time), which are then used to compare algorithms\cite{peise2019elaps} \cite{hoefler2015scientific}. But when system noise begins to have significant impact on program execution, it becomes difficult to summarize the performance into a single number; as a consequence, it is not possible to reliably rank algorithms. In this paper, instead of aiming for accurate estimation of distribution statistics for individual algorithms and then comparing them, we attempt to compute scores which indicate relative distance (in terms of performance) between the algorithms in $\mathcal{A}$.
+%The required number of measurements also increases linearly with the number of algorithms in $\mathcal{A}$.
+
+In order for one algorithm to be better (or worse) than the other, there should be ``noticeable`` difference in their distributions (Figure \ref{fig:diff}). On the other hand, the performance of algorithms are comparable if their distributions are ``equivalent`` or have significant overlap (Figure \ref{fig:eq}). 
+%
+As a consequence, the result of comparing two algorithms can fall into one of the three categories - better, worse or equivalent. 
+%
+%The recommended approach is to find out if there is significant difference in the two distributions and eliminate the possibility of two algorithms being equivalent[hoefler]
+%
+We use this three-way comparison to rank the set of algorithms $\mathcal{A}$ into clusters . The ranks indicate relative distance between algorithms performances. 
+%
+\begin{figure}[h!]
+	\centering
+		\begin{subfigure}[b]{0.5\textwidth}
+		\includegraphics[width=1\linewidth]{fig/dif.png}
+		\caption{Algorithms having noticeable difference in distributions}
+		\label{fig:diff} 
+	\end{subfigure}
+
+	\begin{subfigure}[b]{0.5\textwidth}
+		\includegraphics[width=1\linewidth]{fig/eq.png}
+		\caption{Algorithms having significant overlap of distributions}
+		\label{fig:eq}
+	\end{subfigure}
+	
+	\caption{Five hundred measurements of three solution algorithms (Yellow, Blue, Red) for the Ordinary Least Square Problem}
+	\label{fig:1}
+\end{figure}
+
+The algorithms in $\mathcal{A}$ represent different, alternative ways of computing the same mathematical expression. In exact arithmetic, they would all return the same quantity.  For instance,  in the expression $y_k := H^{T}y + (I_n - H^{T}H)x_k$, which appears in an image restoration application\cite{tirer2018image}, if the product $H^TH$ is computed explicitly, the code would perform a $\mathcal{O}(n^3)$ matrix-matrix multiplication; by contrast, by applying distributivity, one can rewrite this assignment as $y_k := H^{T}(y - Hx_k) + x_k$, obtaining an alternate algorithm which computes the same expression by only matrix-vector multiplications of cost $\mathcal{O}(n^2)$\footnote{Distributivity does not always lead to lower FLOP count.}. In this example, the two algorithms differ in terms of number of floating point operations (FLOPs), hence noticeable difference in terms of execution times are naturally expected. However, two algorithms may differ significantly in execution times even if they perform the same number of FLOPs, and it is even possible that higher FLOP count result in faster executions\cite{barthels2019linnea}.
+
+%As mentioned earlier, to determine which of two algorithms is the fastest, their distributions of execution times should be compared.  The result will depend on the specific sizes of input matrices (operand sizes). Figure [1] shows the distributions of the two algorithms for image restoration for two different dimensions of $H$. When $H$ is small, both the algorithms are equally fast and we want to assign them both to $\mathcal{F}$. If the dimension of $H$ is large, the gains of distributivity starts showing and now only the second algorithm should be in $\mathcal{F}$. 
+
+In practice, many more than two algorithms have to be considered.  For instance, for the generalized least square problem $y := (X^TS^{-1}X)^{-1}X^{T}S^{-1}z$, it is possible to find more than 100 different algorithms\footnote{reference to github repo containing the julia code} that compute the solution and that differ not more than 1.4x in terms of FLOP count.  
+%the product $H^{T}H$ could be computed both by the kernel $gemm$, which implements matrix matrix multiplications, and by calling a different kernel $syrk$, which instead computes a symmetric rank-k update.
+All these different algorithms arise by considering properties of input matrices (such as symmetric positive definite, lower or upper triangular etc.), different paranthesizations for matrix chains, identifying common sub-expressions, etc \cite{psarras2019linear}. In this work, we consider solution algorithms generated by the Linnea framework \cite{barthels2019linnea}. For a given mathematical expression with fixed operand size, Linnea generates a family of algorithms (in the form of Julia code \cite{julia}) consisting of (mostly but not limited to) sequences of BLAS or LAPACK calls.
+
+\textbf{\textit{Contribution:} }The efficient computation of mathematical expressions is critical not only for complex
+simulations but also for time-critical computations done on resource-constrained hardware \cite{towardsEdgeComputing}
+(e.g., instantaneous object detection for autonomous driving applications \cite{connectedvehicles}). A framework that
+chooses the best algorithm should take into consideration at-least the systematic noise factors, such as  regular
+interrupts, impacts of  other applications that are simultaneously sharing the resources etc. Moreover, we observed that
+multiple algorithms can yield similar performance profiles. Therefore,  we develop a methodology for robust
+\p{robustness has to be explained -- what do we mean?} identification of not one, but a set of  fast algorithms for a given operational setting. To this end, we use the bootstrapping technique\cite{bootstrap} to rank the set of equivalent algorithms $\mathcal{A}$ into clusters, where more than one algorithm can obtain the same rank.
+
+\textit{\textbf{Organization}}: In Section \ref{sec:rel}, we highlight the challenges and survey the state of art. In section \ref{sec:torel},  we introduce the idea behind relative performance. In section \ref{sec:met}, we describe our methodology to obtain the relative scores. In section \ref{sec:exp}, we explain the effects of parameters (that are introduced as a part of our framework) and evaluate our methodology. In section \ref{sec:app}, we discuss how this research fits in a bigger picture. Finally, in section \ref{sec:con}, we  summarize with some interesting applications and discuss the need for relative performance "modelling". 
+  
+% We ran our experiments on ... 24 cores. To simulate system noise, we randomly switch the number of threads between 20 - 24.
+%\as{TODO (finish setup)  -- (contributions) -- (organization) I ll get back here after writing the related works and experiment section }
+
+%In this paper, we first describe the bootstrapping strategy, and show how it can be used to cluster the algorithms into equivalence classes, which encodes the relative performance. We show that, under prominent operational noise, this method can be used to get consistent estimates even with smaller sample sizes. We then use these clusters of equivalence classes for different operand sizes as ground truths to train a neural network for generalized matrix chain expressions on a fairly small training budget. We report the accuracy and precision of the predicted set of fast algorithms.
+%
+
+\section{Related Works}
+\label{sec:rel}
+%In the past decade, we have witnessed an increasing number of latency sensitive applications involving intelligent vehicles\cite{connectedvehicles}, real-time video analytics\cite{videoanalytics}, augmented reality\cite{arvr} etc.,  that require costly scientific computations on resource-constrained hardware. Offloading all the computations to a cloud is not a viable solution for such applications because of unacceptable communication latency between the cloud and end devices\cite{surveyMCC} \cite{towardsEdgeComputing}. On the other hand, increasing capabilities of mobile devices enable them to be more suitable for scientific computing\cite{smartPhonesForScientificComputing} \cite{raspberryEdgeComputing}. Consequently, there is a trend of computation offloading\cite{surveyOfComputationalOffloading2013} toward edge computing \cite{edgeComputing2016} \cite{towardsEdgeComputing} \cite{edgeComputing2015}, where significant gains are realized when computations are shifted towards the edge of the network (including the local device)\cite{EdgeComputingQuantifying}. For instance, a proof-of-concept platform that runs face recognition application in \cite{facerecog} shows that the response time is reduced from 900 to 169 ms by moving computation from cloud to the edge. Depending on the distribution of workload among devices, one could come up with myriads of implementation for the same computational problem, each having a significant impact on both latency and energy consumption. Clone cloud in \cite{clonecloud} does on-demand partitioning of workload between mobile and the cloud, and their prototype could reduce 20x running time and energy for the tested application.
+%
+%Increasing number of such decentralized applications in recent times can be attributed to containerization tools like Docker\cite{docker} that ease portability of code without compromising performance\cite{dockerForEdgeComputing} \cite{dockerhpc} and enable the use of same Linux environment across heterogeneous devices. Further more, recent high level programming languages like Julia\cite{julia}, Tensorflow\cite{tensorflow}, PyTorch\cite{pytorch} etc that abstract the calls to linear algebra libraries optimized for different hardware (such as raspberry Pi, GPU), allow developers to write code without worrying about the underlying architecture and yet achieve close to machine performance. While benchmarking suites like \cite{cavbench}\cite{edgeaibench} are used to evaluate performance over the network, it is also important to find out if the individual devices also achieve the required performance. Linear algebra computations, which appear at the heart of most scientific computations can have hundreds of equivalent implementations, each  with different performance footprints\cite{barthels2019linnea} and therefore selection of the right implementation is equally significant.
+The efficient computation of linear algebra expressions is essential as those are at the heart of a myriad of
+applications in both scientific computing and data science. Users rely more and more on high-level languages and
+environments such as Julia\cite{julia}, Matlab\cite{MatlabOTB}, and Tensorflow\cite{tensorflow}, which accept linear
+algebra expressions as input, and internally map them to a sequence of calls to kernels from optimized libraries such as
+BLAS and LAPACK. This is precisely the type of algorithms we consider in this work. The problem of mapping a target
+expression to sequences of library calls is known as the Linear Algebra Mapping Problem (LAMP)\cite{psarras2019linear};
+any problem instance has many mathematically equivalent solutions, and these languages have to select the best
+one. However, it has been shown that most of them choose algorithms that are sub-optimal in terms of performance\cite{psarras2019linear}.
+
+
+\p{nothing wrong with this paragraph, but it does not build much of a story. Somewhere, somehow, you have to give the
+  reader a broader perspective: One way of ranking different algorithms is by predicting the performance of each of
+  them. Then, what approaches have been used in the past to predict the performance of linear algebra algorithms? Here
+  are some:
+  \begin{itemize}
+  \item FLOP count, pure and simple.
+  \item Analytical performance models with limited or without any execution of the algorithms (Roman, others).
+  \item Interpolation models: the algorithms are sampled and fitted to known/unknown models (Felix, ...).
+  \item Hierarchical approaches: the algorithms are NOT sampled, but their building blocks are (Elmar, ...). 
+  \item ...
+  \end{itemize}
+  This organization has to emerge in this section.
+}
+
+  
+Common performance metrics, such as those obtained by accumulating FLOPs, are not always direct indicators of the
+fastest code\cite{barthels2019linnea}. Moreover, the prediction of performance based on metrics such as FLOPs and
+memory-stalls, not only requires a deep understanding of the processor architecture, but also a detailed analysis of
+kernel implementations \cite{iakymchuk2012modeling} \cite{iakymchuk2011execution}, which is not always available. An
+ideal performance metric, which should reflect the execution time of the program, would still lack in reproducibility;
+this is because of system noise \cite{hoefler2010characterizing}, cache effects\cite{peise2014cache}, behaviour of
+collective communications \cite{agarwal2005impact}, and several other factors. Many authors have noted the lack of
+textbook statistical behaviours in execution times, and it is not realistic to eliminate entirely performance variations \cite{robustbenchmarking} \cite{trackingPerfVariation} \cite{statiscalperfCompare}. Guidelines for interpretable benchmarking using statistical approaches are discussed in\cite{hoefler2015scientific}.
+
+\p{more narrative needed. Here you have the opportunity of saying that ``The problem we are tackling was also considered
+  by Peise ...'' with a different approach. Then explain differences (which you do).}  
+Peise et al in \cite{peise2012performance} use performance models to predict statistical estimates of execution time,
+which are then used to rank different variants of algorithms. However, they do not attempt to detect if two algorithms
+are equivalent and hence their predictions can be unreliable. \p{expand the concept of ``unreliable'' -- you mean that
+  if repeated twice, the process might lead to different rankings (?). You should also contrast with our title, which
+  talks about ``robust''. What do we mean by that?}
+In our work, we do not attempt to predict performance, but aim to arrive at a reliable performance metric that can
+capture equivalence of two algorithms. In a nutshell, we aim to separate the fastest algorithm(s) from the rest, without
+an accurate assessment of its(their) performance.
+
+\p{again, narrative: how does this paragraph fit the whole story? It's probably enough to flip the sentence a bit:
+``The problem of deciding whether or not two algs are equivalent performance-wise was tackled by ...''}
+Hoefler et al. recommend to compute confidence intervals or conduct tests for significant differences to find out if two
+algorithms are equivalent~\cite{hoefler2015scientific}. Their focus is mainly on arriving at (absolute) performance estimates for an algorithm in isolation, whose interpretability depends on the number of measurements (sample size) used to compute such estimates. On the other hand we aim to compute interpretable "relative" estimates of algorithms in comparison to one and other, which are not influenced much by sample size (see Section \ref{sec:exp} B).
+ 
+ Ritter et al in \cite{ritter2020learning} proposed cost effective sampling strategies to build performance models to
+ help with identifying scalability bugs. By contrast, our relative estimates does not capture the speed up of one
+ algorithm over the other. \p{we don't?} We assume that the basic kernel building blocks for linear algebra operations
+ are already optimized for a given architecture. \p{I do not understand how this last sentence fits in the paragraph/story}
+
+ \p{once again, what's the story here? how does this paragraph connect to the rest?}
+ Some authors \cite{outlierremoval} \cite{androbench} propose removal of outlier measurements for the sake of using statistical analysis designed for normal distribution. However, the true distribution of an algorithm need not necessarily follow a normal distribution on all architectures. Therefore, in this work, we do not make any assumption about the underlying distribution. 
+
+%  However, instead of aiming at statistical estimates of performance (such as minimum or median execution time) for an algorithm in isolation (mainly done for scalability analysis \cite{compareEvalLinearAlg}\cite{peise2019elaps}\cite{peise2012performance}), we seek to quantify the performance relative to other algorithms in comparison. 
+
+ %automatically map a linear algebra expression to sequence of calls to kernels from optimized libraries such as BLAS [ ] and LAPACK [ ]. They all generate 
+
+
+%Common performance metrics, like those obtained by accumulating the number of arithmetic operations(FLOPs), are not always direct indicators of the fastest code; almost all high-level languages for matrix computations that map computations internally to optimized kernels such as those provided by BLAS and LAPACK, find programs that are suboptimal in terms of performance\cite{psarras2019linear}. Moreover, the prediction of performance based on FLOPs or memory-stalls, not only requires a deep understanding of the processor architecture but also a detailed analysis of kernel implementations \cite{iakymchuk2012modeling} \cite{iakymchuk2011execution}, which are not always available. An ideal performance metric, which should reflect the execution time of the program, are not exactly reproducible; this is because of system noise \cite{hoefler2010characterizing}, cache effects\cite{peise2014cache}, collective communications calls within the application\cite{agarwal2005impact} etc. Guidelines for interpretable benchmarking using statistical approaches are discussed in\cite{hoefler2015scientific}. However, instead of aiming at statistical estimates of performance (such as minimum or median execution time) for an algorithm in isolation (mainly done for scalability analysis \cite{compareEvalLinearAlg}\cite{peise2019elaps}\cite{peise2012performance}), we seek to quantify the performance relative to other algorithms in comparison. 
+
+%Execution time … statistical approaches … drawbacks … confidence intervals … 
+
+
+ 
+%In order to address the high computational demands With the raising number of intelligent applications (e.g., augmented reality and face recognition) that not only require much more computational power,
+
+\section{Towards Relative Performance}
+\label{sec:torel}
+%The ranking methodology described in section 2 establishes a notion of distance (in terms of performance) between the algorithms in $\mathcal{A}$.
+Fundamentally, we want to establish a notion of distance (in terms of performance) between the solution algorithms in $\mathcal{A}$. For instance, consider the distributions of execution times shown in Figure \ref{fig:1} (Red, Blue and Yellow) for three solution algorithms\footnote{Linnea generates more than three solution algorithms for Ordinary Least Squares. For the sake of explanation, we have considered only three. To understand the reason behind the existence of many algorithms for the least square problem, refer to section 4 in \cite{barthels2019linnea} } of the Ordinary Least Square problem:  $(X^TX)^{-1}X^{T}y$. 
+%Since the algorithms "Red" and "Blue" are significantly overlapping, the distance between them should be less than that of their distances from "Green". 
+Every algorithm $\mathbf{a}_j \in \mathcal{A}$ is measured 500 times ($|\mathbf{a}_j| = 500$). Then the set of all executions is $\mathcal{E} = \mathbf{a}_1 \oplus \mathbf{a}_2 \oplus \mathbf{a}_3$, where $\oplus$ is a concatenation operation. The set $\mathcal{E}$ is shuffled and the executions are timed. Every execution $e \in \mathcal{E}$ is run twice and only the second measurement is considered; the first measurement is mostly an outlier due to loading and caching of data and instructions\cite{peise2019elaps}. For all intents and purposes, every algorithm is measured much less than 500 times and therefore, we usually have only a snap-shot of the distributions shown in Figure \ref{fig:1}.
+% The execution time of every algorithm $\mathbf{a} \in \mathcal{A}$ is measured $N$ times in order to get a snap shot of their respective distributions. The measured algorithms are represented as an array of size N; hence, one can also denote $\mathbf{a} \in \mathbb{R}^N$.  We do not make any assumptions about the nature of the distribution.
+  %In order to understand the need to address this problem via  relative performance, we first study the limits of using absolute metrics.
+  The "straight forward approach" is to find the minimum (or median) execution time of every algorithm $\mathbf{a}_j \in \mathcal{A}$ and rank the algorithms by sorting the minimums in ascending order\cite{peise2012performance}. But by doing this, every algorithm would obtain a unique rank and there could be only one algorithm with rank 1, which is assigned to the set of fastest algorithms $\mathcal{F}$. The distributions "Yellow" and "Blue" would obtain different ranks although they are significantly overlapping.  
+  %In such a case, only one algorithm ("Red") that has rank 1 can be reliably assigned to the set of fastest algorithms $\mathcal{F}$. 
+  Consequently, one could choose the k-best algorithms\cite{kbest-kadioglu2011algorithm} with k$=2$, and  assign both "Yellow" and "Blue" to the set of fastest algorithms $\mathcal{F}$. But the chosen value of k$=2$  might not be suitable for other comparisons; for instance, if we are comparing just "Blue" and "Red" distributions which have noticeable differences between them, then it would not make sense to assign both with the same rank.
+  % if there is noticeable difference in the distributions between the first two algorithms, then with k$=2$, both would be assigned the same rank, which does not make sense. 
+  %But there is no gaurentee that all the k-best algorithms would be equivalent for all classes of linear algebra expressions; if there is noticeable difference in the distributions between the first two algorithms, then it does not make sense to assign them with same rank. 
+  
+ In order to extract more information from the snapshots of distributions, instead of relying on a single statistical estimate, one could repeat the "straight forward approach" ($T$ times) on multiple sub-samples of measurements ($\tilde{\mathbf{a}_j} \subset \mathbf{a_j}$) and infer the final outcome based on results across multiple repetitions. This procedure is known as bootstrapping\cite{bootstrap} and the steps for this approach, adapted to our problem, is shown Procedure \ref{alg:fa}. For a given set of algorithms $ \mathbf{a_1},\mathbf{a_2} ,..., \mathbf{a_P}\in \mathcal{A}$ for which the execution times are measured $N$ times each, Procedure \ref{alg:fa} returns the set of fastest algorithms $\mathcal{F}$ with an associated score for each algorithm. If an algorithm $\mathbf{a_j}$ obtains rank 1 in at least one out of the $T$ iterations, it is assigned to $\mathcal{F}$. If an algorithm $\mathbf{a_j}$ obtains rank 1 in $c$ out of $T$ bootstrap iterations, then Procedure \ref{alg:fa} would return a score of  $c/T$ for $\mathbf{a_j}$. For instance, when this procedure is applied to the distributions in Figure 1 (with $T=100$ and a sub-sample size 5) both "Yellow" and "Blue" are assigned to $\mathcal{F}$ with scores 0.55 and 0.45 respectively.
+ 
+%one could use test for significant differences (such as Kruskal-Walis ANOVA[hoefler]) between algorithm pairs and merge the ranks of algorithms if there is significant overlap.
+
+\begin{algorithm}
+	\caption{ Get$\mathcal{F}$$(\mathcal{A})$ }
+	\label{alg:fa}
+	\hspace*{\algorithmicindent} \textbf{Input: } $ \mathbf{a_1},\mathbf{a_2} ,..., \mathbf{a_P}\in \mathcal{A}$ \\
+	\hspace*{\algorithmicindent} \textbf{Output: } $ (f_1,c_1), (f_2, c_2), ..., (f_Q,c_Q) \in \mathcal{F} \times C  $
+	\begin{algorithmic}[1] 
+		\State $L, C \leftarrow [ \quad ]$ \Comment{Initialize empty lists}
+		\For{i = 1, ..., T}
+		\State Sub sample $\mathbf{\tilde{a}_{j}} \subset \mathbf{a_j} \quad \forall j$ \Comment{$ j \in \{1,..,P\}$} 
+		\State $\tilde{\mathcal{F}} \leftarrow \text{argmin}_j[min(\mathbf{\tilde{a}}_j  ) | \forall j]$ 
+		\State $L$.append($\tilde{\mathcal{F}}$)
+		\EndFor
+		\State $\mathcal{F} \leftarrow $ unique elements in $\tilde{\mathcal{F}}$ \Comment{Let $|\mathcal{F}| = Q$}
+		\For{$ f_q$ in  $f_1,f_2,...,f_Q \in \mathcal{F}$}
+		\State $c \leftarrow$ number of occurances of $f_q$ in $\tilde{\mathcal{F}}$ 
+		\State $C$.append($c/T$)
+		\EndFor
+		\State return $(\mathcal{F} \times C)$
+	\end{algorithmic}
+\end{algorithm}
+
+%Let $\mathcal{A}(x)$ be the set of all solution algorithms for certain linear algebra expression $x$. 
+In practice $N$ is much lesser than 500 and Procedure \ref{alg:fa} should account for the uncertainty in measurement data in capturing the true distributions. 
+%The scores obtained by Procedure \ref{alg:fa} still does have a meaningful translation to the indicate the distance between the algorithms; ideally, the scored obtained for "Red" and "Blue" should be comparable. This is because only one algorithm is assigned to $\mathcal{F}$ in every iteration. 
+The recommended approach is to use test for significant differences (such as Kruskal-Walis ANOVA\cite{hoefler2015scientific}) between algorithm pairs and merge the ranks of algorithms if there is no enough evidence of one algorithm dominating over the other. In this paper, we attempt to incorporate the test for significant differences in Procedure \ref{alg:fa} by re-defining the straight forward sorting function (in line 4) by introducing a three-way comparison function. As a consequence, both "Yellow" and "Blue" can get a score of 1.0.
+
+\section{Methodology}
+\label{sec:met}
+
+The execution time of every algorithm $\mathbf{a} \in \mathcal{A}$ is measured $N$ times in order to get a snap shot of their respective distributions. The measured algorithms are represented as an array of size N; hence, one can also denote $\mathbf{a} \in \mathbb{R}^N$.  We do not make any assumptions about the nature of the distribution. To compare the distributions of two algorithms $\mathbf{a_1},\mathbf{a_2} \in \mathcal{A}$, we follow the steps indicated in Procedure \ref{alg:compare}. 
+%\p{``method'' is not a common word for this. ``Algorithm'', ``Procedure'', ``Test'', ... Later you call it ``function'', which is also ok}
+%
+The comparison yields one of three outcomes:
+\begin{itemize}
+	\item Case A: algorithm $\mathbf{a_1}$ is better than $\mathbf{a_2}$ $(<)$ or
+	\item Case B: algorithm  $\mathbf{a_1}$ is as good as $\mathbf{a_2}$ $(\sim)$ or
+	\item Case C: algorithm  $\mathbf{a_1}$ is worse than $\mathbf{a_2}$ $(>)$ 
+\end{itemize}
+Cases A and C imply that there are noticeable differences between the distributions; case B implies that the distributions are equivalent.
+\begin{algorithm}
+	\caption{Compare $(\mathbf{a_1}, \mathbf{a_2})$ }
+	\label{alg:compare}
+	\hspace*{\algorithmicindent} \textbf{Input: } $ \mathbf{a_1}, \mathbf{a_2} \in \mathbb{R}^{N}$ \\
+	\hspace*{\algorithmicindent} \textbf{Output } $\in  \{<,>,\sim \}$
+	\begin{algorithmic}[1] 
+		\State $p \leftarrow 0$
+		\For{i = 1, ..., M}
+		\State sample K values $\tilde{\mathbf{a}_1} \subset \mathbf{a_1}$
+		\State sample K values $\tilde{\mathbf{a}_2} \subset \mathbf{a_2}$
+		\State $e_1$ = min($\tilde{\mathbf{a}_1}$)
+		\State $e_2$ = min($\tilde{\mathbf{a}_2}$)
+		\If{$e_1 \le e_2$}
+		\State $p=p+1$
+		\EndIf
+		\EndFor
+		\If{$\frac{p}{M} \geq threshold$ }
+		\State return $<$ \Comment{$\mathbf{a_1}$ is better than $\mathbf{a_2}$}
+		\ElsIf{$\frac{p}{M} < 1 - threshold$}
+		\State return $>$ \Comment{$\mathbf{a_1}$ is worse than $\mathbf{a_2}$}
+		\Else
+		\State return $\sim$ \Comment{$\mathbf{a_1}$ is as good as $\mathbf{a_2}$}
+		\EndIf
+	\end{algorithmic}
+	%              \p{I don't like ``thresh'' -- either shorten it to $t$, $T$, or write it our ``threshold''.
+	%                Also, here it's thresh, but in the text it's $thresh$ -- be consistent!}
+\end{algorithm}
+%\p{The level of detail is good, but the connection is missing. ``To this end'' is not linking to anything.
+%  Also, use references (``one could also use other metrics'' -- as done in [ref], [ref].}  
+In Procedure 1, the distributions $\mathbf{a_1}$ and $\mathbf{a_2}$ are sub-sampled with sample size $K < N $ and the minimum
+execution time from the respective sub-samples are compared. This procedure is repeated $M$ times. In theory, one could
+also use other metrics like mean or median execution\cite{peise2019elaps} or even combination of multiple metrics across different
+comparisons. Since most distributions involving linear algebra computations are skewed towards the left, we use minimum execution time\cite{peisethesis}\cite{robustbenchmarking}. Let $e_1$ and $e_2$ be certain estimates of execution time of algorithms $\mathbf{a_1}$ and $\mathbf{a_2}$ respectively. As $K \to N$, the estimates ($e_1, e_2$) would approximate the minimum execution time ($m_1, m_2$) of the distributions ($\mathbf{a_1}, \mathbf{a_2}$) and when $K \to 1$, the estimates would point to an instance of execution time ($t_1, t_2$) from the distribution.
+%\p{better phrasing: ``Since (it was observed that) most distributions... , we use minimum execution time.''
+%  Then introduce notation.}
+The probability that $e_1$ is less than $e_2$ is approximated from the results of $M$ comparisons. That is, if $e_1$ is less than $e_2$ in $p$ out of $M$ comparisons, then the empirical probability $P[e_1 \le e_2]$ is $p/M$. 
+%In general, when $K$ is decreased, $M$ should be proportionately increased in-order to have similar information gain from the distribution.
+%From the results of $M$ comparisons, the probability that the minimum $m_A$ of algorithm \textbf{a} 
+%\p{the notation is not helping! if alg is \textbf{a}, then its min should be $\min_{\textbf{a}}$ or $m_{\textbf{a}}$ or ...}
+%is less than that of algorithm \textbf{b} ($m_B$) is approximated.  If
+%
+The outcome of the Compare function in Procedure \ref{alg:compare} is determined based on this empirical probability (see lines 9 - 14 in Procedure \ref{alg:compare}).
+The valid values of $threshold$ for Procedure \ref{alg:compare} lies in the range $[0.5,1]$. When $threshold \to 0.5$, the outcome B becomes
+less and less likely (and impossible for $threshold=0.5$), while $threshold \to 1$, the conditions for outcomes A and C becomes stricter and B becomes more prominent. The parameter $K$ also controls the likelihood of outcome B; when $K \to N$ (or $K \to 1$), outcome $B$ becomes less (or more) likely. 
+
+The Compare function in Procedure \ref{alg:compare} is used in Procedure \ref{alg:sort} to sort the measured set of algorithms $\mathbf{a_1},\mathbf{a_2}, ..., \mathbf{a_P} \in \mathcal{A}$
+and rank them into equivalence classes. The swapping procedure for bubble-sort using three-way comparisons is shown in
+Procedure \ref{alg:sort}.
+%\p{I feel that this is a core contribution of the work, but it's not properly highlighted... -- I wonder if Algorithms 1
+%and 2 should be swapped. I am not sure. }
+The outcome of the Sort function is a sequence of ordered algorithms $<\mathbf{\tilde{a}_1}, \mathbf{\tilde{a}_2}, ... \mathbf{\tilde{a}_P}>$ and their corresponding ranks $ <r_1,r_2,...r_P> $. Eventually, every algorithm $\tilde{\mathbf{a}_j}$ should be ranked better or at least ranked the same as the next algorithm in sequence $\tilde{\mathbf{a}_{j+1}}$.  It should be noted that the Compare function is not transitive. That is,  $\mathbf{a_1} < \mathbf{a_2}$ and $\mathbf{a_2} < \mathbf{a_3} $ does not imply $\mathbf{a_1} < \mathbf{a_3}$. Hence, there is an element of randomness in the final rankings, which is addressed in Procedure \ref{alg:f}. 
+
+
+
+%The Consistency of comparison can then be defined as
+%\begin{equation}
+%\text{Consistency} = | 1-2P[m_A \le m_B] |
+%\end{equation}  
+%When  $P[m_A \le m_B] \to 1$, $m_A$ is consistently less than $m_B$, which implies algorithm \textbf{a }is consistently better than \textbf{b}. In contrast, when  $P[m_A \le m_B] \to 0$, algorithm \textbf{b} is consistently better than \textbf{a}. Consistency is at its least when $P[m_A \le m_B] = 0.5$. The hyper-parameter $thresh$  is the consistency threshold that affects the outcome of the Compare function. The  final outcome of the Compare function is either 
+%\p{Paolo got here}
+
+\begin{algorithm}
+	\caption{Sort $(\mathcal{A})$ }
+	\label{alg:sort}
+	\hspace*{\algorithmicindent} \textbf{Input: } $ \mathbf{a_1},\mathbf{a_2},...\mathbf{a_P} \in \mathcal{A}$ \\
+	\hspace*{\algorithmicindent} \textbf{Output: } $ < (\mathbf{\tilde{a}_1},r_1), (\mathbf{\tilde{a}_2}, r_2), ..., (\mathbf{\tilde{a}_P},r_P) > $
+	\begin{algorithmic}[1] 
+		\State Initialize consecutive ranks $r_1,....,r_P$
+		\State $\tilde{\mathcal{A}} \leftarrow \mathcal{A}$
+		\For{i = 1, ..., P}
+		\For{j=0,...,P-i-1}
+		\State ret = Compare($\mathbf{\tilde{a}_j}, \mathbf{\tilde{a}_{j+1}}$)
+		\If{$\mathbf{\tilde{a}_{j+1}}$ is better than $\mathbf{\tilde{a}_{j}}$}
+		\State Swap $\mathbf{\tilde{a}_{j}}$ and $\mathbf{\tilde{a}_{j+1}}$
+		\If{$r_{j+1} == r_j$}
+		\If{$r_{j-1} !=r_j$ or $j==0$}
+		\State Increment ranks $r_{j+1}, ..., r_P$ by 1
+		\EndIf
+		\Else
+		\If{$r_{j-1} == r_j$ and $j!=0$}
+		\State Decrement ranks $r_{j+1}, ..., r_P$ by 1
+		\EndIf
+		\EndIf
+		\ElsIf{$\mathbf{\tilde{a}_{j+1}}$ is as good as $\mathbf{\tilde{a}_{j}}$}
+		\If{$r_{j+1} != r_j$}
+		\State Decrement ranks $r_{j+1}, ..., r_P$ by 1
+		\EndIf
+		\ElsIf{$\mathbf{\tilde{a}_{j}}$ is better than $\mathbf{\tilde{a}_{j+1}}$}
+		\State Leave the arrays as it is
+		\EndIf		
+		\EndFor
+		\EndFor
+		\State return $< (\mathbf{\tilde{a}_1},r_1), ..., (\mathbf{\tilde{a}_P},r_P) >$
+	\end{algorithmic}
+\end{algorithm}
+In Procedure \ref{alg:sort}, all the algorithms in $\mathcal{A}$ are first initialized with consecutive ranks, which are then updated after every step of bubble-sort. To understand the ranking rules, consider the example in Fig \ref{fig:sort}, which shows the intermediate steps while sorting the distributions of four algorithms $\mathbf{a_1}, \mathbf{a_2}, \mathbf{a_3},\mathbf{a_4}$ (initialized with rank 1,2,3,4 respectively). All possible update rules that one might encounter could be seen in one of the intermediate steps of this example.
+%If an algorithm $\tilde{s}_{j+1}$ is better than its previous algorithm in sequence $\tilde{s}_j$, then the position index of the two algorithms are swapped.
+
+\begin{enumerate}
+	\item 
+%	\textbf{If algorithm} $\mathbf{a}_{j+1}$ \textbf{is better than the previous algorithm in sequence} $\mathbf{a}_{j}$, \textbf{exchange their positions. }  
+	In the first comparison, algorithm $\mathbf{a_2}$ is better than its previous algorithm $\mathbf{a_1}$. So their positions are exchanged (line 7 in Procedure \ref{alg:sort}). Since all the algorithms have unique ranks at this point, $\mathbf{a_2}$ and $\mathbf{a_1}$ also exchange their ranks and no special rank update rules are applied. So, $\mathbf{a_2}$ gets rank 1 and $\mathbf{a_1}$ gets rank 2.
+	
+	\item Next, algorithm $\mathbf{a_1}$ is as good as $\mathbf{a_3}$; so we don't swap.
+	 %But  $\mathbf{a_1}$ and $\mathbf{a_3}$ have different ranks, which is contradicting the outcome of comparison. 
+	 $\mathbf{a_3}$ is given the same rank as $\mathbf{a_1}$ and the rank of $\mathbf{a_4}$ is corrected by decrementing 1. (line 14-16 in Procedure \ref{alg:sort}). Now $\mathbf{a_1}$ and $\mathbf{a_3}$ gets rank 2 and $\mathbf{a_4}$ is corrected to rank 3.
+	
+	\item Algorithm $\mathbf{a_4}$ is better than its previous algorithm $\mathbf{a_3}$. So their positions are swapped. Now, we cannot exchange ranks as we did in step 1; then $\mathbf{a_3}$ will be pushed to rank 3, while it's sharing the rank 2 with $\mathbf{a_1}$ (recall from step 2: $\mathbf{a_3} \sim \mathbf{a_1}$). So $\mathbf{a_3}$ stays at rank 2 along with $\mathbf{a_4}$ and the ranks of other algorithms are corrected  (line 12-13 in Procedure \ref{alg:sort}). Since the positions are still exchanged,  $\mathbf{a_4}$ occurs earlier in the sequence and hence there is an inherent ordering even when algorithms share the same rank. 
+	
+	
+	\item Algorithm $\mathbf{a_4}$ is better than $\mathbf{a_1}$ and are swapped as usual. But now, both the algorithms currently have same rank. Since $\mathbf{a_4}$ reached  the top of its performance class  after having defeated all the other algorithms with the same rank, $\mathbf{a_4}$ should now get higher rank than rest of the algorithms in its class. Therefore, we increment the rank of $\mathbf{a_1}$ and $\mathbf{a_3}$ by 1 (line 9-10 in Procedure \ref{alg:sort}). So $\mathbf{a_4}$ stays at rank 2, but $\mathbf{a_1}$ and $\mathbf{a_3}$ gets rank 3.
+	
+	\item Now $\mathbf{a_4}$ is as good as $\mathbf{a_2}$. So both are given the same rank and the ranks of algorithms occurring later in the sequence are decremented by 1 (this is the same rule applied in step 2) Eventually, we have algorithms $\mathbf{a_2}$, $\mathbf{a_4}$ with rank 1, and $\mathbf{a_1}$,  $\mathbf{a_3}$ with rank 2.
+\end{enumerate}
+
+\begin{figure}
+	\includegraphics[width=0.5\textwidth]{fig/ranking}
+	\caption{Bubble Sort with Compare function}
+	\label{fig:sort}
+\end{figure}
+
+All the algorithms with rank 1 are assigned to the set of fastest algorithms $\mathcal{F}$. From the above illustration, $\mathcal{F} \leftarrow \{\mathbf{a_2}, \mathbf{a_4}\}$. But the rankings obtained by our procedure are not deterministic. For instance, in step 5, algorithm $\mathbf{a_4}$ could be at the threshold of being better than $\mathbf{a_2}$. That is, if $\mathbf{a_4}$ was estimated to be better than $\mathbf{a_2}$ for every one in two runs of Procedure \ref{alg:sort}, then $\mathbf{a_2}$ would be pushed to rank 2 and would not be assigned to $\mathcal{F}$ fifty percent of the time. Such randomness are also the reason for non-transitivity of the Compare function. To address this, the Sort function is repeated $T$ times and in each iteration, all the algorithms that was assigned rank 1 are accumulated in the list $L$. If an algorithm $\mathbf{a_j}$ was assigned rank 1 in $c$ out of $T$ iterations, then $\mathbf{a_j}$ would appear $c$ times in the list $L$. Then, the relative confidence (or relative score) for $\mathbf{a_j}$ is $c/T$. These steps are implemented in Procedure \ref{alg:f}, which returns the set of fastest algorithms $\mathcal{F}$ (all the unique occurrences in $L$) and their corresponding relative scores. Since we are interested only in the fastest algorithms, all the other candidates that was not assigned rank 1 even once are given a relative score 0. For the illustration in Figure 1, if $\mathbf{a_4} < \mathbf{a_2}$ in approximately one out of two runs of Sort function, $\mathbf{a_2}$ would get a relative score of 0.5 and $\mathbf{a_4}$ would get 1.0.  $\mathbf{a_1}$ and $\mathbf{a_3}$ would be given relative scores 0.
+
+
+\begin{algorithm}
+	\caption{ Get$\mathcal{F}$$(\mathcal{A})$ }
+	\label{alg:f}
+	\hspace*{\algorithmicindent} \textbf{Input: } $ \mathbf{a_1},\mathbf{a_2} ,..., \mathbf{a_P}\in \mathcal{A}$ \\
+	\hspace*{\algorithmicindent} \textbf{Output: } $ (f_1,c_1), (f_2, c_2), ..., (f_Q,c_Q) \in \mathcal{F} \times C  $
+	\begin{algorithmic}[1] 
+		\State $L, C \leftarrow [ \quad ]$ \Comment{Initialize empty lists}
+		\For{i = 1, ..., T}
+		\State $\tilde{\mathcal{A}}, R \leftarrow Sort(\mathcal{A})$
+		\State $\tilde{\mathcal{F}} \leftarrow [\mathbf{\tilde{a}_j} | r_j == 1 ]$ \Comment{all algorithms with rank 1}
+		\State $L$.append($\tilde{\mathcal{F}}$)
+		\EndFor
+		\State $\mathcal{F} \leftarrow $ unique elements in $\tilde{\mathcal{F}}$ \Comment{Let $|\mathcal{F}| = Q$}
+		\For{$ f_q$ in  $f_1,f_2,...,f_Q \in \mathcal{F}$}
+		\State $c \leftarrow$ number of occurances of $f_q$ in $\tilde{\mathcal{F}}$ 
+		\State $C$.append($c/T$)
+		\EndFor
+		\State return $(\mathcal{F} \times C)$
+	\end{algorithmic}
+\end{algorithm}
+
+\section{Experiments}
+\label{sec:exp}
+
+\subsection{Effects of Parameters}
+ The three-way Compare function in Procedure \ref{alg:compare} falls back to the regular comparison (with outcomes $< , >$) when $M = 1$; as a consequence, the Get$\mathcal{F}$ function in Procedure \ref{alg:f} reduces to the approach described in Procedure \ref{alg:fa} (with no test for significant difference). In order to understand the differences in relative scores obtained by Procedure \ref{alg:fa} and Procedure \ref{alg:f}, consider the instance of ordinary least square problem with four solution algorithms (generated by Linnea\cite{barthels2019linnea}), each measured fifty times\footnote{the repetitions of each algorithm were not measured consecutively but randomly sandwiched between other algorithms. This was done to ensure that the measurements were linearly independent (unbiased from system noise).}. The algorithms were measured on a  .... run with 24 threads.  In an attempt  to check the invariance (robustness) of relative scores to system noise, the experiments were repeated by randomly switching between 20 to 24 threads. Table \ref{tab:1} shows the relative scores obtained by Procedure \ref{alg:fa} ( i.e., $M=1$  and $threshold$ not applicable) and Procedure \ref{alg:f} (for different values of $threshold$ with $M=30$). 
+%The experiments were also repeated by randomly switching between 20 to 24 threads to simulate system noise.
+% The distributions of the algorithms in comparison with Algorithm 0  are shown in Figure \ref{fig:d}. 
+ %Significant overlap can be observed between algorithms 0,1 and 2. 
+ \begin{table}[h!]
+ 	\begin{center}
+ 		\begin{tabular}{c|ccc|ccc|}
+ 			\cline{2-7}
+ 			& \multicolumn{3}{|c|}{Without Noise} &  \multicolumn{3}{|c|}{With Noise} \\
+ 			\cline{2-7}
+ 			& Alg 0 & Alg 1 & Alg 2 & Alg 0 & Alg 1 & Alg 2 \\
+ 			\hline
+ 			\multicolumn{1}{ |c| }{M=1, thresh=N/A}  & 0.45 &0.11 &0.44 & 0.53 & 0.07 & 0.40 \\
+ 			\hline
+ 			\multicolumn{1}{ |c| }{M=30, thresh=0.50} & 0.53 &0.0 &0.47 & 0.76 & 0.0 & 0.24 \\
+ 			\hline
+ 			\multicolumn{1}{ |c| }{M=30, thresh=0.80} & 0.96 &0.73 &0.90 & 0.97 & 0.12 & 0.95\\
+ 			\hline
+ 			\multicolumn{1}{ |c| }{M=30, thresh=0.85}& 0.97 &0.89 &0.94 & 0.95 & 0.22 & 0.93 \\
+ 			\hline
+ 			\multicolumn{1}{ |c| }{M=30, thresh=0.90} & 0.99 &0.97 &0.99 & 0.95 & 0.66 & 0.90\\
+ 			\hline
+ 			\multicolumn{1}{ |c| }{M=30, thresh=0.95}& 1.0 &0.99 &0.99 & 0.97 & 0.88 & 0.97 \\
+ 			\hline
+ 		\end{tabular}
+ 		\caption{T = 500, K = 10}
+ 		\label{tab:1}
+ 	\end{center}
+ \end{table}
+
+For $M=1$  with sub-sample size $K=10$ and bootstrap iterations $T=500$, Algorithms 0, 1 and 2 were assigned to the set of fastest algorithms $\mathcal{F}$ with Algorithm 0 obtaining the highest relative score. The histogram of Algorithm 0 is compared against Algorithms 1, 2, 3 in Figure \ref{fig:d}. In-spite of significant overlap observed between algorithms 0 and 1, the latter gets a lower relative score and the actual mean of Algorithm 1 is also distinctly greater than that of Algorithms 0 and 2 (see Table \ref{tab:2}). But the minimum execution time of Algorithm 1 (from the experiment without noise), is lesser than that of other algorithms,  thereby pointing to a contradicting result. This shows that depending exclusively on a single summary statistic would not lead to reliable comparisons.
+ %Moreover, what we have is just a snap-shot of the true distrution and the sample statistics are also just an approximation. 
+%Therefore, it is recommended to test for significant differences between the distributions in comparison. 
+ %Therefore, the  Whether one wants to consider both these algorithms as equivalent or distinct can be controlled by the threshold.
+%Although the histogram comparison between Algorithms 0 and 1 show a more significant overlap in Figure \ref{fig:Ng2} than in Figure \ref{fig:Ng2}
+\begin{figure}
+	\centering
+	\begin{subfigure}[b]{0.5\textwidth}
+		\includegraphics[width=1\linewidth]{fig/f_noise}
+		\caption{Without Noise}
+		\label{fig:Ng1}
+	\end{subfigure}
+
+	\begin{subfigure}[b]{0.5\textwidth}
+		\includegraphics[width=1\linewidth]{fig/f}
+		\caption{With Noise}
+		\label{fig:Ng2} 
+	\end{subfigure}
+\caption{Fifty measurements from algorithms 1,2,3 compared against algorithm 0.  Algorithm 0: Cyan;  Algorithm 1: Orange; Algorithm 2: Yellow; Algorithm 3: Red.}
+\label{fig:d}
+\end{figure}
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c|ccc|ccc|}
+	\cline{2-7}
+	& \multicolumn{3}{|c|}{Without Noise (ms)} &  \multicolumn{3}{|c|}{With Noise (ms)} \\
+	\cline{2-7}
+	& min & mean & std & min  &mean & std  \\
+	\hline
+	\multicolumn{1}{ |c| }{ Alg 0} & 1.46 & 1.76 & 0.24 & 1.47 & 1.83 & 0.24 \\
+	\hline
+	 \multicolumn{1}{ |c| }{ Alg 1}& 1.44 & 1.82 & 0.25 & 1.51 & 1.91 & 0.44 \\
+	\hline
+	 \multicolumn{1}{ |c| }{ Alg 2}& 1.46 & 1.75 & 0.28 & 1.45 & 1.85 & 0.24 \\
+	\hline
+	\multicolumn{1}{ |c| }{ Alg 3}& 1.74 & 2.61 & 0.73 & 2.05 & 2.6 & 0.36 \\
+	\hline
+\end{tabular}
+	\caption{Statistics of the Algorithms}
+\label{tab:2}
+\end{center}
+\end{table}
+In order to extract more information from the measurements, we set $M=30$ and $threshold =0.5$, which still uses only the two-way comparison in Procedure \ref{alg:compare}, but now the pair-wise comparisons with the minimum statistic is bootstrapped before sorting. By doing this,  Algorithm 1 gets a relative score 0 and is strictly not assigned to $\mathcal{F}$ (see Table \ref{tab:1}, second row). But the measurements  in Figure \ref{fig:d} are just snap-shots of the true distribution and there is still an element of uncertainty. Therefore, it  is important to perform the test for significant difference, by which the result of two comparison is considered equivalent ($\sim$) if there is no enough evidence of one algorithm dominating over the other. The tolerance level up-to which two algorithms should be considered equivalent, is controlled by adjusting the $threshold$ parameter in the Compare function. When the $threshold$ is increased, the conditions for one algorithm to be ranked better than the other in Procedure \ref{alg:sort} becomes stricter. For instance, threshold value of 0.9 implies that an algorithm should perform better than the other algorithm in at-least 9 out 10 runs in-order to be ranked better. As a consequence, it gets difficult for algorithms 0 and 2 to be ranked better than algorithm 1 and they all get clustered with same rank. From Table \ref{tab:1}, it can be seen that as $threshold$ is increased, the relative score of Algorithm 1 becomes higher, which means it is assigned with rank 1 more frequently across different repetitions of the  Sort function in Procedure \ref{alg:f}. Algorithm 3 still gets relative score 0; because, its difference from other distributions are noticeable.
+
+Recall that, from the original set of fifty measurements, sub-samples of size $K$ are bootstrapped for pairs of algorithms ($\mathbf{a_i}, \mathbf{a_j} $) and the estimates ($e_i, e_j$) of the execution time are obtained, which are then used to compute the empirical probability $P[e_i \leq e_j]$ in  Procedure \ref{alg:compare}. As $K$ approaches the full sample size (i.e., 50), the resulting estimates $e_i$ and $e_j$ would approximate minimum execution time of the actual  measurements $\mathbf{a_i}$ and $ \mathbf{a_j}$ respectively. As a result,  when $K=50$, the evaluation of $e_1 \le e_2$  becomes deterministic for all $M$ iterations in Procedure \ref{alg:compare} and $\sim$ would become an impossible outcome. From the measurements without noise, algorithm 1 has the least execution time (see Table \ref{tab:2}) and therefore, as $K \to 50$, the relative score of Algorithm 1 approaches 1.0, while the scores of Algorithm 0 and 2 approaches 0 (see Figure \ref{fig:k})
+\begin{figure}[h!]
+	\includegraphics[width=0.5\textwidth]{fig/k}
+	\caption{Relative Score vs K \\ T=500, M=30, threshold=0.9}
+	\label{fig:k}     
+\end{figure}
+Thus, higher values of $K$ invalidates the advantages of bootstrapping and  makes the comparisons depend on a single statistic. Hence, it is ideal to have smaller values of $K$ or have it randomly chosen from a set of values (say $K \in [5,10]$).
+%\begin{figure}
+%	\begin{subfigure}[b][0.5\textwidth]
+%		\includegraphics[width=1\linewidth]{fig/f}
+%		%\caption{Bubble Sort with Compare function}
+%	\end{subfigure}
+%	\begin{subfigure}[b][0.5\textwidth]
+%		\includegraphics[width=1\linewidth]{fig/f_a}
+%		%\caption{Bubble Sort with Compare function}
+%	\end{subfigure}
+%\end{figure}
+
+\subsection{Effect of sample size on robustness}
+
+We evaluate the effect on quality of solutions as the number of measurements per algorithm or sample size ($N$) is decreased. Let $\mathcal{F}_{N}$ be the set of fastest algorithms identified with $N$ measurements. As $N$ is decreased, we report the average precision and recall of $\mathcal{F}_N $ with respect to $\mathcal{F}_{50}$ in Table \ref{tab:3} for linear algebra expressions from 25 application examples in [linnea].
+
+We consider the solutions to be less robust when the precision is low. Consider the following instance where $\mathcal{F}_{50} : \{0,2\}$ and $\mathcal{F}_{20} : \{0,1,2,3,4\}$; more algorithms get assigned with rank 1 for lower sample sizes because of lack of evidence of one algorithm dominating over the other. When compared against $\mathcal{F}_{50}$, the set $\mathcal{F}_{20}$ has  $\{0,2\}$ as true positives ($TP$), $\{1,3,4\}$  as false positives ($FP$) and there are no false negatives ($FN$). Therefore, the precision\footnote{precision = $TP/(TP+FP)$} is 0.4 and recall\footnote{recall = $TP/(TP+FN)$} is 1.0. Such a case of low precision but high recall occurs when $M=1$ (see Table \ref{tab:3}) and this could be misleading; although all the fastest algorithms are identified at a lower sample size (resulting in a high recall score), the solution is cluttered with false positives (thereby making it less robust). But for the instance when $\mathcal{F}_{20} : \{2\}$ that has one false negative $\{0\}$ and no false positives, the precision is 1.0 and the recall is 0.5. Although not all the fastest algorithms are identified (resulting in a lower recall score), the identified algorithms are precise (thereby making the solution more robust).
+%In practise, for every linear algebra expression $x$ with fixed matrix sizes (or operand sizes) $o$,  Linnea[ref] generates many equivalent algorithms (sometimes over hundreds) and populates $\mathcal{A}(x,o)$. That is, every time the operand sizes are changed, all the algorithms in $\mathcal{A}(x,o)$ should be measured $N$ times in order to be ranked. Therefore, it would be useful if  reliable estimates can be obtained with smaller sample sizes. For expressions from 25 application examples in [linnea], Table ?? shows the variations in precision and recall of the identified set of fastest algorithms $\mathcal{F}(o,x)$  as the number of measurements $N$ is decreased. 
+\begin{table}[h!]
+	\begin{center}
+		\renewcommand{\arraystretch}{1.2}
+		\begin{tabular}{c|cc|cc|cc|cc|}
+			\cline{2-9}
+			& \multicolumn{6}{|c|}{M = 30} &  \multicolumn{2}{|c|}{M=1} \\
+			\cline{2-9}
+			& \multicolumn{2}{|c|}{th=0.9} &  \multicolumn{2}{|c|}{th=0.8} &  \multicolumn{2}{|c|}{th=0.5}&  \multicolumn{2}{|c|}{th=NA} \\
+			\hline
+				\multicolumn{1}{ |c| }{ \textbf{Sample Size}} & \textbf{prc} & \textbf{rec} & \textbf{prc} & \textbf{rec}  &\textbf{prc }& \textbf{rec} & \textbf{prc }& \textbf{rec} \\
+			\hline
+			\multicolumn{1}{ |c| }{ 40} & 0.97 & 0.94 & 0.86 & 0.90 & 0.71 & 0.67 & 0.32 & 0.99 \\
+			\hline
+			\multicolumn{1}{ |c| }{ 35} & 0.95 & 0.94 & 0.91 & 0.87 & 0.78 & 0.65 & 0.31 & 0.99 \\
+			\hline
+			\multicolumn{1}{ |c| }{ 30} & 0.93 & 0.86 & 0.88 & 0.87 & 0.68 & 0.58 & 0.34 & 0.99 \\
+			\hline
+			\multicolumn{1}{ |c| }{ 25} & 0.95 & 0.86 & 0.90 & 0.78 & 0.58 & 0.58 & 0.34 & 0.98 \\
+			\hline
+			\multicolumn{1}{ |c| }{ 20} & 0.97 & 0.80 & 0.93 & 0.75 & 0.50 & 0.38 & 0.36 & 0.95 \\
+			\hline
+			\multicolumn{1}{ |c| }{ 15} & 0.98 & 0.59 & 0.96 & 0.61 & 0.69 & 0.29 & 0.44 & 0.85 \\
+			\hline
+		\end{tabular}
+		\caption{Average Precision and Recall of $\mathcal{F}$ \\T=50, K=10}
+		\label{tab:3}
+	\end{center}
+\end{table}
+ From Table \ref{tab:3}, it can be seen that the precision improves considerably when $M=30$ even with zero tolerance (i.e., $threshold = 0.5$). Furthermore, the precision improves as $threashold$ increases, but this is partly due to the fact that more algorithms are now assigned with rank 1. For the instance previously discussed, $\mathcal{F}_{50}$ had just two algorithms $\{0,2\}$ at $threshold = 0.5$, but when $threshold = 0.9$ the set now has $ \{0,1,2,3\}$. This is because the conditions for algorithms 0 and 2 to be ranked better than 1 and 3 became stricter. Now the same solution $\mathcal{F}_{20} : \{0,1,2,3,4\}$ that was obtained with $M=1$ will have a higher precision score (0.8). Therefore, improved precision at higher thresholds comes with a cost of having higher tolerance (to allow for same rank even with lesser overlap of distributions) or stricter conditions for one algorithm to be ranked better than the other. 
+ 
+ \section{Why is Relative Performance important?}
+ \label{sec:app}
+ In the past decade, we have witnessed an increasing number of latency sensitive applications involving intelligent vehicles\cite{connectedvehicles}, real-time video analytics\cite{videoanalytics}, augmented reality\cite{arvr} etc.,  that require costly scientific computations on resource-constrained hardware. Offloading all the computations to a cloud is not a viable solution for such applications because of unacceptable communication latency between the cloud and end devices\cite{surveyMCC} \cite{towardsEdgeComputing}. On the other hand, increasing capabilities of mobile devices enable them to be more suitable for scientific computing\cite{smartPhonesForScientificComputing} \cite{raspberryEdgeComputing}. Consequently, there is a trend of computation offloading\cite{surveyOfComputationalOffloading2013} toward edge computing \cite{edgeComputing2016} \cite{towardsEdgeComputing} \cite{edgeComputing2015}, where significant gains are realized when computations are shifted towards the edge of the network (including the local device)\cite{EdgeComputingQuantifying}. For instance, a proof-of-concept platform that runs face recognition application in \cite{facerecog} shows that the response time is reduced from 900 to 169 ms by moving computation from cloud to the edge. 
+% Depending on the distribution of workload among devices, one could come up with myriads of implementation for the same computational problem, each having a significant impact on both latency and energy consumption. Clone cloud in \cite{clonecloud} does on-demand partitioning of workload between mobile and the cloud, and their prototype could reduce 20x running time and energy for the tested application.
+ 
+ Increasing number of such applications in recent times can be attributed to containerization tools like Docker\cite{docker} that ease portability of code without compromising performance\cite{dockerForEdgeComputing} \cite{dockerhpc} and enable the use of same Linux environment across heterogeneous devices. Further more, recent high level programming languages like Julia\cite{julia}, Tensorflow\cite{tensorflow}, PyTorch\cite{pytorch} etc that abstract the calls to linear algebra libraries optimized for different hardware (such as raspberry Pi, GPU), allow developers to write code without worrying about the underlying architecture and yet achieve close to machine performance. While benchmarking suites like \cite{cavbench}\cite{edgeaibench} are used to evaluate performance over the network, it is also important to find out if the single node devices also achieve the required performance. Linear algebra computations, which appear at the heart of most scientific computations can have hundreds of equivalent implementations, each  with different performance footprints\cite{barthels2019linnea} and therefore selection of the right implementation is equally significant.
+ 
+\section{Conclusion}
+\label{sec:con}
+We presented a measurement based approach to identify all equivalently fast programs for a given linear algebra expression via relative performance. Linear algebra operations which occur at the heart of most mathematical computations are one of the major computational bottlenecks and therefore identification of high performance code is very essential; for instance, the resilience of a flying drone to atmospheric conditions can be improved if the on-board processor can compute a few extra gradient per second. 
+
+The typical development of linear algebra code involves a lot of trial and error in choosing the best implementation out of several possible alternatives. In order to automate linear algebra code development, compilers like Linnea\cite{barthels2019linnea} were developed, which automatically decomposes a mathematical expression and finds all equivalent algorithms.  The selection of best algorithms by such compilers can be guided by models that predict relative performance. Therefore, a natural extension to this work would be "Relative Performance modelling", where we aim to automatically predict (or model) the relative scores without having to execute all the algorithms.
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
