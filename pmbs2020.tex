@@ -296,7 +296,11 @@ In order to extract more information from the snapshots of distributions, instea
 estimate, one could repeat the "straightforward'' approach ($T$ times) on multiple sub-samples of measurements
 ($\tilde{\mathbf{a}_j} \subset \mathbf{a_j}$) \p{the concept of ``sub-sample'' is not clear} and infer the final outcome
 based on results across multiple repetitions. This procedure is known as bootstrapping\cite{bootstrap} and the steps for
-this approach, adapted to our problem, are shown in Procedure \ref{alg:fa}. For a given set of algorithms $
+this approach, adapted to our problem, are shown in Procedure \ref{alg:fa}.
+\p{The flow is ok, but again, it does not deliver the punchline. Here we describe the procedure, but it is not at all
+  clear if this is already a viable, conclusive solution, or if it has some kind of drawbacks. Somewhere one has to get
+  the idea that bootstrapping by itself is still lacking something.}
+For a given set of algorithms $
 \mathbf{a_1},\mathbf{a_2} ,..., \mathbf{a_P}\in \mathcal{A}$ for which the execution times are measured $N$ times each,
 Procedure \ref{alg:fa} returns the set of fastest algorithms $\mathcal{F}$, each with an associated score \p{the
   score will be $c_i$, right?}. As mentioned, the procedure unfolds over $T$ iterations.
@@ -345,17 +349,26 @@ evidence of one algorithm dominating the other. In this paper, we incorporate th
 Procedure \ref{alg:fa} by re-defining the straightforward sorting function (in line 4 or Procedure 1) by introducing a
 three-way comparison function. As a consequence, both "Yellow" and "Blue" will be able to receive a score of 1.0.
 
+
+
+
 \section{Methodology}
 \label{sec:met}
-
-The execution time of every algorithm $\mathbf{a} \in \mathcal{A}$ is measured $N$ times in order to get a snap shot of their respective distributions. The measured algorithms are represented as an array of size N; hence, one can also denote $\mathbf{a} \in \mathbb{R}^N$.  We do not make any assumptions about the nature of the distribution. To compare the distributions of two algorithms $\mathbf{a_1},\mathbf{a_2} \in \mathcal{A}$, we follow the steps indicated in Procedure \ref{alg:compare}. 
+\p{without some story, one does not understand how this section relates to the previous one. What are we doing here?
+  What problem are we addressing with Procedure 2?}
+  
+In order to obtain a snapshot of the distributions, the execution time of every algorithm $\mathbf{a} \in \mathcal{A}$ is
+measured $N$ times. The measurements are stored in an array of size N; hence, one can also denote
+$\mathbf{a} \in \mathbb{R}^N$. We do not make any assumptions about the nature of the distribution. To compare the
+distributions of two algorithms $\mathbf{a_1},\mathbf{a_2} \in \mathcal{A}$, we follow the steps indicated in Procedure
+\ref{alg:compare}.
 %\p{``method'' is not a common word for this. ``Algorithm'', ``Procedure'', ``Test'', ... Later you call it ``function'', which is also ok}
 %
 The comparison yields one of three outcomes:
 \begin{itemize}
-	\item Case A: algorithm $\mathbf{a_1}$ is better than $\mathbf{a_2}$ $(<)$ or
-	\item Case B: algorithm  $\mathbf{a_1}$ is as good as $\mathbf{a_2}$ $(\sim)$ or
-	\item Case C: algorithm  $\mathbf{a_1}$ is worse than $\mathbf{a_2}$ $(>)$ 
+\item Case A: algorithm $\mathbf{a_1}$ is better than $\mathbf{a_2}$ $(<)$
+\item Case B: algorithm  $\mathbf{a_1}$ is as good as $\mathbf{a_2}$ $(\sim)$
+\item Case C: algorithm  $\mathbf{a_1}$ is worse than $\mathbf{a_2}$ $(>)$
 \end{itemize}
 Cases A and C imply that there are noticeable differences between the distributions; case B implies that the distributions are equivalent.
 \begin{algorithm}
@@ -384,13 +397,25 @@ Cases A and C imply that there are noticeable differences between the distributi
 	\end{algorithmic}
 	%              \p{I don't like ``thresh'' -- either shorten it to $t$, $T$, or write it our ``threshold''.
 	%                Also, here it's thresh, but in the text it's $thresh$ -- be consistent!}
-\end{algorithm}
+        \p{the font for K is different here and in the text. It's not clear that they  are the same thing. Always CONSISTENCY!}
+        \p{the tilde is misplaced}
+      \end{algorithm}
 %\p{The level of detail is good, but the connection is missing. ``To this end'' is not linking to anything.
 %  Also, use references (``one could also use other metrics'' -- as done in [ref], [ref].}  
+\p{why are we talking about Procedure 1 here? This should be either in the previous section, or at the beginning of this
+  one, to contrast Procedures 1 and 2.}
 In Procedure 1, the distributions $\mathbf{a_1}$ and $\mathbf{a_2}$ are sub-sampled with sample size $K < N $ and the minimum
 execution time from the respective sub-samples are compared. This procedure is repeated $M$ times. In theory, one could
 also use other metrics like mean or median execution\cite{peise2019elaps} or even combination of multiple metrics across different
-comparisons. Since most distributions involving linear algebra computations are skewed towards the left, we use minimum execution time\cite{peisethesis}\cite{robustbenchmarking}. Let $e_1$ and $e_2$ be certain estimates of execution time of algorithms $\mathbf{a_1}$ and $\mathbf{a_2}$ respectively. As $K \to N$, the estimates ($e_1, e_2$) would approximate the minimum execution time ($m_1, m_2$) of the distributions ($\mathbf{a_1}, \mathbf{a_2}$) and when $K \to 1$, the estimates would point to an instance of execution time ($t_1, t_2$) from the distribution.
+comparisons. Since most distributions involving linear algebra computations are skewed towards the left \p{what do we
+  mean by this? ``left'' of what?}, we use minimum execution time\cite{peisethesis}\cite{robustbenchmarking}.
+
+Let $e_1$ and $e_2$ be certain estimates \p{I would very much avoid the word ``estimates'' because it suggests that we
+  attempt to ``estimate'', i.e., guess, predict, the execution time, which is something entirely unrelated to what we
+  do. I'd use ``measurements'' or ``observations''}
+of execution time of algorithms $\mathbf{a_1}$ and $\mathbf{a_2}$ respectively. As $K \to N$, the estimates ($e_1, e_2$)
+would approximate \p{I don't understand this. Why would ($e_1, e_2$) approximate ... ? They are said to be ``certain
+  estimates''}  the minimum execution time ($m_1, m_2$) of the distributions ($\mathbf{a_1}, \mathbf{a_2}$) and when $K \to 1$, the estimates would point to an instance of execution time ($t_1, t_2$) from the distribution.
 %\p{better phrasing: ``Since (it was observed that) most distributions... , we use minimum execution time.''
 %  Then introduce notation.}
 The probability that $e_1$ is less than $e_2$ is approximated from the results of $M$ comparisons. That is, if $e_1$ is less than $e_2$ in $p$ out of $M$ comparisons, then the empirical probability $P[e_1 \le e_2]$ is $p/M$. 
@@ -400,17 +425,32 @@ The probability that $e_1$ is less than $e_2$ is approximated from the results o
 %is less than that of algorithm \textbf{b} ($m_B$) is approximated.  If
 %
 The outcome of the Compare function in Procedure \ref{alg:compare} is determined based on this empirical probability (see lines 9 - 14 in Procedure \ref{alg:compare}).
-The valid values of $threshold$ for Procedure \ref{alg:compare} lies in the range $[0.5,1]$. When $threshold \to 0.5$, the outcome B becomes
-less and less likely (and impossible for $threshold=0.5$), while $threshold \to 1$, the conditions for outcomes A and C becomes stricter and B becomes more prominent. The parameter $K$ also controls the likelihood of outcome B; when $K \to N$ (or $K \to 1$), outcome $B$ becomes less (or more) likely. 
+Valid values of $threshold$ for Procedure \ref{alg:compare} lie in the range $[0.5,1]$. When $threshold \to 0.5$, the outcome B becomes
+less and less likely (and impossible for $threshold=0.5$), while for $threshold \to 1$, the conditions for outcomes A
+and C becomes stricter and outcome B becomes more and more likely. The parameter $K$ also controls the likelihood of outcome B; as $K \to N$ (or $K \to 1$), outcome $B$ becomes less (or more) likely. 
 
-The Compare function in Procedure \ref{alg:compare} is used in Procedure \ref{alg:sort} to sort the measured set of algorithms $\mathbf{a_1},\mathbf{a_2}, ..., \mathbf{a_P} \in \mathcal{A}$
-and rank them into equivalence classes. The swapping procedure for bubble-sort using three-way comparisons is shown in
+The Compare function in Procedure \ref{alg:compare} \p{no, the compare function IS procedure 2, it is not IN} is used in Procedure \ref{alg:sort} to sort the measured set of algorithms $\mathbf{a_1},\mathbf{a_2}, ..., \mathbf{a_P} \in \mathcal{A}$
+and rank them into equivalence classes.
+\p{This sentence gives a sense of direction, but it's buried inside the section. A reader needs a sense of direction
+  right at the opening of a section, chapter, article}
+The swapping procedure for bubble-sort using three-way comparisons is shown in
 Procedure \ref{alg:sort}.
 %\p{I feel that this is a core contribution of the work, but it's not properly highlighted... -- I wonder if Algorithms 1
 %and 2 should be swapped. I am not sure. }
-The outcome of the Sort function is a sequence of ordered algorithms $<\mathbf{\tilde{a}_1}, \mathbf{\tilde{a}_2}, ... \mathbf{\tilde{a}_P}>$ and their corresponding ranks $ <r_1,r_2,...r_P> $. Eventually, every algorithm $\tilde{\mathbf{a}_j}$ should be ranked better or at least ranked the same as the next algorithm in sequence $\tilde{\mathbf{a}_{j+1}}$.  It should be noted that the Compare function is not transitive. That is,  $\mathbf{a_1} < \mathbf{a_2}$ and $\mathbf{a_2} < \mathbf{a_3} $ does not imply $\mathbf{a_1} < \mathbf{a_3}$. Hence, there is an element of randomness in the final rankings, which is addressed in Procedure \ref{alg:f}. 
-
-
+The outcome of the Sort function is a sequence of ordered algorithms $<\mathbf{\tilde{a}_1}, \mathbf{\tilde{a}_2},
+... \mathbf{\tilde{a}_P}>$ and their corresponding ranks $ <r_1,r_2,...r_P> $.
+\p{I do not understand: why do we need tildes on the algorithms? what's the difference between $\mathbf{\tilde{a}_1}$
+  and $\mathbf{{a}_1}$?}
+Eventually, every algorithm
+$\tilde{\mathbf{a}_j}$ should be ranked better or at least ranked the same as the next algorithm in sequence
+$\tilde{\mathbf{a}_{j+1}}$.
+\p{you are misplacing the tilde. It should be $\tilde{\mathbf{a}}_j$, not $\tilde{\mathbf{a}_j}$.
+  $\tilde{\mathbf{a}}_{j+1}$, not $\tilde{\mathbf{a}_{j+1}}$.}
+It should be noted that the Compare function is not transitive. That is,  $\mathbf{a_1} < \mathbf{a_2}$ and
+$\mathbf{a_2} < \mathbf{a_3} $ does not imply $\mathbf{a_1} < \mathbf{a_3}$. Hence, there is an element of randomness in
+the final rankings, which is addressed in Procedure \ref{alg:f}. \p{what do we mean by ``randomness'' here? Are you
+  maybe trying to say that the final outcome also depends on the order in which the algorithms are compared with one
+  another? (the order in which the pair-wise comparisons are performed)}
 
 %The Consistency of comparison can then be defined as
 %\begin{equation}
@@ -425,13 +465,14 @@ The outcome of the Sort function is a sequence of ordered algorithms $<\mathbf{\
 	\hspace*{\algorithmicindent} \textbf{Input: } $ \mathbf{a_1},\mathbf{a_2},...\mathbf{a_P} \in \mathcal{A}$ \\
 	\hspace*{\algorithmicindent} \textbf{Output: } $ < (\mathbf{\tilde{a}_1},r_1), (\mathbf{\tilde{a}_2}, r_2), ..., (\mathbf{\tilde{a}_P},r_P) > $
 	\begin{algorithmic}[1] 
-		\State Initialize consecutive ranks $r_1,....,r_P$
+		\State Initialize $r_1,....,r_P$ with consecutive ranks 
 		\State $\tilde{\mathcal{A}} \leftarrow \mathcal{A}$
 		\For{i = 1, ..., P}
-		\For{j=0,...,P-i-1}
+		\For{j = 0, ..., P-i-1}
 		\State ret = Compare($\mathbf{\tilde{a}_j}, \mathbf{\tilde{a}_{j+1}}$)
 		\If{$\mathbf{\tilde{a}_{j+1}}$ is better than $\mathbf{\tilde{a}_{j}}$}
 		\State Swap $\mathbf{\tilde{a}_{j}}$ and $\mathbf{\tilde{a}_{j+1}}$
+                       \p{does the swap affect $r_j$? you swap the pair $(\tilde{a}_1,r_1)$ or just the algs?}
 		\If{$r_{j+1} == r_j$}
 		\If{$r_{j-1} !=r_j$ or $j==0$}
 		\State Increment ranks $r_{j+1}, ..., r_P$ by 1
@@ -451,7 +492,10 @@ The outcome of the Sort function is a sequence of ordered algorithms $<\mathbf{\
 		\EndFor
 		\EndFor
 		\State return $< (\mathbf{\tilde{a}_1},r_1), ..., (\mathbf{\tilde{a}_P},r_P) >$
-	\end{algorithmic}
+              \end{algorithmic}
+              \p{I don't like $==$ and $!=$; use math symbols: $=$, $\ne$ or maybe a longer =}
+              \p{by simply staring at the algorithm, it is not at all apparent that one will end up with ranks
+                1,1,2,... as opposed to say 3,3,4,...}
 \end{algorithm}
 In Procedure \ref{alg:sort}, all the algorithms in $\mathcal{A}$ are first initialized with consecutive ranks, which are then updated after every step of bubble-sort. To understand the ranking rules, consider the example in Fig \ref{fig:sort}, which shows the intermediate steps while sorting the distributions of four algorithms $\mathbf{a_1}, \mathbf{a_2}, \mathbf{a_3},\mathbf{a_4}$ (initialized with rank 1,2,3,4 respectively). All possible update rules that one might encounter could be seen in one of the intermediate steps of this example.
 %If an algorithm $\tilde{s}_{j+1}$ is better than its previous algorithm in sequence $\tilde{s}_j$, then the position index of the two algorithms are swapped.
@@ -459,18 +503,44 @@ In Procedure \ref{alg:sort}, all the algorithms in $\mathcal{A}$ are first initi
 \begin{enumerate}
 	\item 
 %	\textbf{If algorithm} $\mathbf{a}_{j+1}$ \textbf{is better than the previous algorithm in sequence} $\mathbf{a}_{j}$, \textbf{exchange their positions. }  
-	In the first comparison, algorithm $\mathbf{a_2}$ is better than its previous algorithm $\mathbf{a_1}$. So their positions are exchanged (line 7 in Procedure \ref{alg:sort}). Since all the algorithms have unique ranks at this point, $\mathbf{a_2}$ and $\mathbf{a_1}$ also exchange their ranks and no special rank update rules are applied. So, $\mathbf{a_2}$ gets rank 1 and $\mathbf{a_1}$ gets rank 2.
+          As a first step, algorithms $\mathbf{a_1}$ and $\mathbf{a_2}$ are compared, and 
+          $\mathbf{a_2}$ ends up being better \p{faster?}, so their positions are exchanged (line 7 in
+          Procedure \ref{alg:sort}). Since at this point all the algorithms have unique ranks, $\mathbf{a_2}$ and
+          $\mathbf{a_1}$ also exchange their ranks and no special rules for updating ranks are applied.
+          So, $\mathbf{a_2}$ and $\mathbf{a_1}$ receive rank 1 and 2, respectively.
 	
-	\item Next, algorithm $\mathbf{a_1}$ is as good as $\mathbf{a_3}$; so we don't swap.
+	\item Next, algorithm $\mathbf{a_1}$ is compared with $\mathbf{a_3}$;
+          since they are just as good as one another, 
+          no swap takes place.
 	 %But  $\mathbf{a_1}$ and $\mathbf{a_3}$ have different ranks, which is contradicting the outcome of comparison. 
-	 $\mathbf{a_3}$ is given the same rank as $\mathbf{a_1}$ and the rank of $\mathbf{a_4}$ is corrected by decrementing 1. (line 14-16 in Procedure \ref{alg:sort}). Now $\mathbf{a_1}$ and $\mathbf{a_3}$ gets rank 2 and $\mathbf{a_4}$ is corrected to rank 3.
+          $\mathbf{a_3}$ is given the same rank as $\mathbf{a_1}$ \p{how do you decide that $a_3$ receives the rank of
+            $a_1$, and not viceversa? -- I get it, but it should be explained}
+            and the rank of $\mathbf{a_4}$ is corrected by
+         decrementing 1. (line 14-16 in Procedure \ref{alg:sort}). Hence $\mathbf{a_1}$ and $\mathbf{a_3}$ have rank 2 and $\mathbf{a_4}$ is corrected to rank 3.
 	
-	\item Algorithm $\mathbf{a_4}$ is better than its previous algorithm $\mathbf{a_3}$. So their positions are swapped. Now, we cannot exchange ranks as we did in step 1; then $\mathbf{a_3}$ will be pushed to rank 3, while it's sharing the rank 2 with $\mathbf{a_1}$ (recall from step 2: $\mathbf{a_3} \sim \mathbf{a_1}$). So $\mathbf{a_3}$ stays at rank 2 along with $\mathbf{a_4}$ and the ranks of other algorithms are corrected  (line 12-13 in Procedure \ref{alg:sort}). Since the positions are still exchanged,  $\mathbf{a_4}$ occurs earlier in the sequence and hence there is an inherent ordering even when algorithms share the same rank. 
+	\item Algorithm $\mathbf{a_4}$ results to be better than $\mathbf{a_3}$, so their positions are
+          swapped. However, ranks cannot be exchanged the same way it happened in step 1.
+          \p{why not?}
+          Instead, $\mathbf{a_3}$ will be pushed to rank 3, \p{``pushed to rank 3'' -- what does it mean?} while it's
+          sharing the rank 2 with $\mathbf{a_1}$ (recall from step 2: $\mathbf{a_3} \sim \mathbf{a_1}$). So
+          $\mathbf{a_3}$ stays at rank 2 along with $\mathbf{a_4}$ and the ranks of other algorithms \p{which ones?} are
+          corrected (line 12-13 in Procedure \ref{alg:sort}). Since the positions are still exchanged, \p{what does
+            ``still exchanged'' mean?} $\mathbf{a_4}$ occurs \p{the concept of ``occurrence'' is rather obscure
+            here.} earlier in the sequence \p{earlier than?}, hence there is an inherent ordering even when algorithms share the same rank. 
+		
+	\item
+          \p{explain why we compare 4 and 1}
+          Algorithm $\mathbf{a_4}$ is better than $\mathbf{a_1}$, so the algorithms are swapped as usual. However, the
+          algorithms currently share the same rank. Since $\mathbf{a_4}$ reached the top of its performance
+          class---having defeated all the other algorithms with the same rank---it should now get a higher rank than the
+          other algorithms in its class. Therefore, the rank of $\mathbf{a_1}$ and $\mathbf{a_3}$ is incremented by 1
+          (line 9-10 in Procedure \ref{alg:sort}), while $\mathbf{a_4}$ stays at rank 2, and $\mathbf{a_1}$ and $\mathbf{a_3}$ receive rank 3.
 	
-	
-	\item Algorithm $\mathbf{a_4}$ is better than $\mathbf{a_1}$ and are swapped as usual. But now, both the algorithms currently have same rank. Since $\mathbf{a_4}$ reached  the top of its performance class  after having defeated all the other algorithms with the same rank, $\mathbf{a_4}$ should now get higher rank than rest of the algorithms in its class. Therefore, we increment the rank of $\mathbf{a_1}$ and $\mathbf{a_3}$ by 1 (line 9-10 in Procedure \ref{alg:sort}). So $\mathbf{a_4}$ stays at rank 2, but $\mathbf{a_1}$ and $\mathbf{a_3}$ gets rank 3.
-	
-	\item Now $\mathbf{a_4}$ is as good as $\mathbf{a_2}$. So both are given the same rank and the ranks of algorithms occurring later in the sequence are decremented by 1 (this is the same rule applied in step 2) Eventually, we have algorithms $\mathbf{a_2}$, $\mathbf{a_4}$ with rank 1, and $\mathbf{a_1}$,  $\mathbf{a_3}$ with rank 2.
+	\item
+          Finally, \p{explain why 4 is compared with 2}
+          $\mathbf{a_4}$ is as good as $\mathbf{a_2}$, so both are given the same rank and the ranks of algorithms
+          occurring later in the sequence are decremented by 1 (this is the same rule applied in step 2). Eventually,
+          algorithms $\mathbf{a_2}$ and $\mathbf{a_4}$ obtain rank 1, and $\mathbf{a_1}$ and $\mathbf{a_3}$ obtain rank 2.
 \end{enumerate}
 
 \begin{figure}
@@ -479,7 +549,21 @@ In Procedure \ref{alg:sort}, all the algorithms in $\mathcal{A}$ are first initi
 	\label{fig:sort}
 \end{figure}
 
-All the algorithms with rank 1 are assigned to the set of fastest algorithms $\mathcal{F}$. From the above illustration, $\mathcal{F} \leftarrow \{\mathbf{a_2}, \mathbf{a_4}\}$. But the rankings obtained by our procedure are not deterministic. For instance, in step 5, algorithm $\mathbf{a_4}$ could be at the threshold of being better than $\mathbf{a_2}$. That is, if $\mathbf{a_4}$ was estimated to be better than $\mathbf{a_2}$ for every one in two runs of Procedure \ref{alg:sort}, then $\mathbf{a_2}$ would be pushed to rank 2 and would not be assigned to $\mathcal{F}$ fifty percent of the time. Such randomness are also the reason for non-transitivity of the Compare function. To address this, the Sort function is repeated $T$ times and in each iteration, all the algorithms that was assigned rank 1 are accumulated in the list $L$. If an algorithm $\mathbf{a_j}$ was assigned rank 1 in $c$ out of $T$ iterations, then $\mathbf{a_j}$ would appear $c$ times in the list $L$. Then, the relative confidence (or relative score) for $\mathbf{a_j}$ is $c/T$. These steps are implemented in Procedure \ref{alg:f}, which returns the set of fastest algorithms $\mathcal{F}$ (all the unique occurrences in $L$) and their corresponding relative scores. Since we are interested only in the fastest algorithms, all the other candidates that was not assigned rank 1 even once are given a relative score 0. For the illustration in Figure 1, if $\mathbf{a_4} < \mathbf{a_2}$ in approximately one out of two runs of Sort function, $\mathbf{a_2}$ would get a relative score of 0.5 and $\mathbf{a_4}$ would get 1.0.  $\mathbf{a_1}$ and $\mathbf{a_3}$ would be given relative scores 0.
+\p{as I wrote, with all the corrections it's not immediately clear that there will be a rank 1.}
+All the algorithms with rank 1 are assigned to the set of fastest algorithms $\mathcal{F}$. From the above illustration,
+$\mathcal{F} \leftarrow \{\mathbf{a_2}, \mathbf{a_4}\}$. Notice however that the rankings obtained by this procedure are
+not deterministic. \p{not ``entirely'' deterministic? -- I would say ... ``not entirely deterministic, DUE TO ....''}
+For instance, in step 5, algorithm $\mathbf{a_4}$ could be at the threshold \p{this is related to ``threshold'' in
+  procedure 2, right? then make the connection} of being better than $\mathbf{a_2}$. That is, if $\mathbf{a_4}$ was
+estimated to be better than $\mathbf{a_2}$ once in two runs of Procedure \ref{alg:sort}, then fifty percent of the times
+$\mathbf{a_2}$ would be pushed to rank 2 and would not be assigned to $\mathcal{F}$. Such randomness is also the reason
+for non-transitivity of the Compare function. To address this, \p{we propose? we repeat?} the Sort function is repeated
+$T$ times and in each iteration, all the algorithms that received rank 1 are accumulated in the list $L$. If an
+algorithm $\mathbf{a_j}$ was assigned rank 1 in $c$ out of $T$ iterations, then $\mathbf{a_j}$ would appear $c$ times in
+the list $L$. Then, the relative confidence (or relative score) for $\mathbf{a_j}$ is $c/T$. These steps are implemented
+in Procedure \ref{alg:f}, which returns the set of fastest algorithms $\mathcal{F}$ (all the unique occurrences in $L$)
+and their corresponding relative scores. Since we are interested only in the fastest algorithms, all the other
+candidates that were not assigned rank 1 even once are given a relative score of 0. For the illustration in Figure 1, if $\mathbf{a_4} < \mathbf{a_2}$ in approximately one out of two runs of Sort function, $\mathbf{a_2}$ would get a relative score of 0.5 and $\mathbf{a_4}$ would get 1.0.  $\mathbf{a_1}$ and $\mathbf{a_3}$ would be given relative scores 0.
 
 
 \begin{algorithm}
