@@ -74,7 +74,7 @@ pauldj@cs.umu.se}
 
   For a given linear algebra problem, we consider those Solution algorithms that are mathematically equivalent to one
   another, and that mostly consist of a sequence of calls to kernels from optimized libraries such as BLAS and
-  LAPACK. Although equivalent (at least in exact precision), those algorithms typically exhibit significant differences
+  LAPACK. Althogh equivalent (at least in exact precision), those algorithms typically exhibit significant differences
   in terms of performance, and naturally, we are interested in finding the fastest one(s). In practice, we often observe
   that multiple algorithms yield comparable performance characteristics. Therefore, we aim to identify the subset of algorithms that are reliably faster than the rest. To this end, instead of quantifying the performance of an
   algorithm in absolute terms, we present a measurement-based approach that assigns a relative score to the algorithms
@@ -97,7 +97,6 @@ pauldj@cs.umu.se}
 %  \begin{enumerate}
 %  \item The conference is PMBS, not PMBC
 %  \item Christos as co-author if we include MTTKRP, otherwise not.
-
 %  \end{enumerate}
 %}
 
@@ -248,18 +247,63 @@ algorithms are equivalent~\cite{hoefler2015scientific}. Their focus is mainly on
 \section{Towards Relative Performance}
 \label{sec:torel}
 %The ranking methodology described in section 2 establishes a notion of distance (in terms of performance) between the algorithms in $\mathcal{A}$.
-Fundamentally, we want to establish a notion of distance (in terms of performance) between the solution algorithms in $\mathcal{A}$. For instance, consider the distributions of execution times shown in Figure \ref{fig:1} (Red, Blue and Yellow) for three solution algorithms\footnote{Linnea generates more than three solution algorithms for Ordinary Least Squares. For the sake of explanation, we have considered only three. To understand the reason behind the existence of many algorithms for the least square problem, refer to section 4 in \cite{barthels2019linnea} } of the Ordinary Least Square problem:  $(X^TX)^{-1}X^{T}y$. 
-%Since the algorithms "Red" and "Blue" are significantly overlapping, the distance between them should be less than that of their distances from "Green". 
-Every algorithm $\mathbf{a}_j \in \mathcal{A}$ is measured 500 times ($|\mathbf{a}_j| = 500$). Then the set of all executions is $\mathcal{E} = \mathbf{a}_1 \oplus \mathbf{a}_2 \oplus \mathbf{a}_3$, where $\oplus$ is a concatenation operation. The set $\mathcal{E}$ is shuffled and the executions are timed. Every execution $e \in \mathcal{E}$ is run twice and only the second measurement is considered; the first measurement is mostly an outlier due to loading and caching of data and instructions\cite{peise2019elaps}. For all intents and purposes, every algorithm is measured much less than 500 times and therefore, we usually have only a snap-shot of the distributions shown in Figure \ref{fig:1}.
+Fundamentally, we want to establish a notion of distance (in terms of performance) between any two algorithms in the set
+$\mathcal{A}$. As an example, consider the distributions of execution times shown in Fig.~\ref{fig:1} for three different algorithms (Red, Blue and
+Yellow) that solve the Ordinary Least Square problem\footnote{For the sake of
+  explanation, we only consider three solution algorithms; for this problem, Linnea generates many more than three,
+  as explained in Sec.~4 of~\cite{barthels2019linnea}.}: $(X^TX)^{-1}X^{T}y$. 
+%Since the algorithms "Red" and "Blue" are significantly overlapping, the distance between them should be less than that
+%of their distances from "Green".
+\p{I think here you want to say that ``the distributions were obtained with/by the following procedure'' or something
+  like that.}
+Every algorithm $\mathbf{a}_j \in \mathcal{A}$ is measured 500 times ($|\mathbf{a}_j| = 500$).
+\p{Maybe: ``(The execution time of) every alg will be measured 500 times, (according to the following scheme)?}
+Then the set of all executions is $\mathcal{E} = \mathbf{a}_1 \oplus \mathbf{a}_2 \oplus \mathbf{a}_3$, where $\oplus$
+is a concatenation operation. The set $\mathcal{E}$ is shuffled and the executions are timed. Every execution $e \in
+\mathcal{E}$ is run twice and only the second measurement is considered; the first measurement is mostly an outlier due
+to loading and caching of data and instructions\cite{peise2019elaps}. In practical applications, algorithms are typically
+measured \p{measured = ``timed''? should you write somewhere in the intro that you will use ``measure an
+  algorithm a'' to mean ``measure the execution time of a'', or ``time a''?}
+only a few times (likely fewer than 500 times, possibly just once), and therefore, only a snapshot of the distributions
+shown in Figure \ref{fig:1} will be available.
+\p{So far so good; where are you taking me now? Only a snapshot is available, so what? The punchline is missing.
+  How do snapshots lead to differences with respect to full distributions? What you explain next (averaging, minimum)
+  can be equally applied to full distributions and to snapshots, so what?}
 % The execution time of every algorithm $\mathbf{a} \in \mathcal{A}$ is measured $N$ times in order to get a snap shot of their respective distributions. The measured algorithms are represented as an array of size N; hence, one can also denote $\mathbf{a} \in \mathbb{R}^N$.  We do not make any assumptions about the nature of the distribution.
   %In order to understand the need to address this problem via  relative performance, we first study the limits of using absolute metrics.
-  The "straight forward approach" is to find the minimum (or median) execution time of every algorithm $\mathbf{a}_j \in \mathcal{A}$ and rank the algorithms by sorting the minimums in ascending order\cite{peise2012performance}. But by doing this, every algorithm would obtain a unique rank and there could be only one algorithm with rank 1, which is assigned to the set of fastest algorithms $\mathcal{F}$. The distributions "Yellow" and "Blue" would obtain different ranks although they are significantly overlapping.  
-  %In such a case, only one algorithm ("Red") that has rank 1 can be reliably assigned to the set of fastest algorithms $\mathcal{F}$. 
-  Consequently, one could choose the k-best algorithms\cite{kbest-kadioglu2011algorithm} with k$=2$, and  assign both "Yellow" and "Blue" to the set of fastest algorithms $\mathcal{F}$. But the chosen value of k$=2$  might not be suitable for other comparisons; for instance, if we are comparing just "Blue" and "Red" distributions which have noticeable differences between them, then it would not make sense to assign both with the same rank.
-  % if there is noticeable difference in the distributions between the first two algorithms, then with k$=2$, both would be assigned the same rank, which does not make sense. 
+
+The "straightforward'' approach \p{to do what? ``A ``straightforward'' approach to comparing algorithms consists in
+    finding...''} is to find the minimum (or median, or mean) execution time of every algorithm $\mathbf{a}_j \in
+  \mathcal{A}$ and then use that to construct a ranking~\cite{peise2012performance}. By doing this, every algorithm
+  would obtain a unique rank and only one algorithm could be assigned to the set of fastest algorithms
+  $\mathcal{F}$. The distributions "Yellow" and "Blue" would obtain different ranks although they are significantly
+  overlapping.  
+  \p{ok, but what's the problem with that? since the distributions are nearly identical, there is nothing wrong in
+    selecting one over the other. I don't think this argument is valid. You want to deliver a different punchline.}
+  % In such a case, only one algorithm ("Red") that has rank 1 can be reliably assigned to the set of fastest algorithms
+  $\mathcal{F}$. 
+  \p{``consequently'' does not work here, because it's not clear where we're going.
+    Maybe ``alternatively''. But then again, I suspect we need to show different distributions to make a convincing argument}
+  Consequently, one could choose the $k$-best algorithms\cite{kbest-kadioglu2011algorithm} with $k=2$, and  assign both
+  "Yellow" and "Blue" to the set of fastest algorithms $\mathcal{F}$. However, the fixed value $k=2$  might not be
+  suitable for other scenarios in which either one algorithm or more than two algorithms are superior to the rest. 
+
+  % if there is noticeable difference in the distributions between the first two algorithms, then with $k=2$, both would be assigned the same rank, which does not make sense. 
   %But there is no gaurentee that all the k-best algorithms would be equivalent for all classes of linear algebra expressions; if there is noticeable difference in the distributions between the first two algorithms, then it does not make sense to assign them with same rank. 
-  
- In order to extract more information from the snapshots of distributions, instead of relying on a single statistical estimate, one could repeat the "straight forward approach" ($T$ times) on multiple sub-samples of measurements ($\tilde{\mathbf{a}_j} \subset \mathbf{a_j}$) and infer the final outcome based on results across multiple repetitions. This procedure is known as bootstrapping\cite{bootstrap} and the steps for this approach, adapted to our problem, is shown Procedure \ref{alg:fa}. For a given set of algorithms $ \mathbf{a_1},\mathbf{a_2} ,..., \mathbf{a_P}\in \mathcal{A}$ for which the execution times are measured $N$ times each, Procedure \ref{alg:fa} returns the set of fastest algorithms $\mathcal{F}$ with an associated score for each algorithm. If an algorithm $\mathbf{a_j}$ obtains rank 1 in at least one out of the $T$ iterations, it is assigned to $\mathcal{F}$. If an algorithm $\mathbf{a_j}$ obtains rank 1 in $c$ out of $T$ bootstrap iterations, then Procedure \ref{alg:fa} would return a score of  $c/T$ for $\mathbf{a_j}$. For instance, when this procedure is applied to the distributions in Figure 1 (with $T=100$ and a sub-sample size 5) both "Yellow" and "Blue" are assigned to $\mathcal{F}$ with scores 0.55 and 0.45 respectively.
+
+\p{rephrase as: ``Bootstrapping is a common/known procedure to extract ... The idea is to ....''} 
+In order to extract more information from the snapshots of distributions, instead of relying on a single statistical
+estimate, one could repeat the "straightforward'' approach ($T$ times) on multiple sub-samples of measurements
+($\tilde{\mathbf{a}_j} \subset \mathbf{a_j}$) \p{the concept of ``sub-sample'' is not clear} and infer the final outcome
+based on results across multiple repetitions. This procedure is known as bootstrapping\cite{bootstrap} and the steps for
+this approach, adapted to our problem, are shown in Procedure \ref{alg:fa}. For a given set of algorithms $
+\mathbf{a_1},\mathbf{a_2} ,..., \mathbf{a_P}\in \mathcal{A}$ for which the execution times are measured $N$ times each,
+Procedure \ref{alg:fa} returns the set of fastest algorithms $\mathcal{F}$, each with an associated score \p{the
+  score will be $c_i$, right?}. As mentioned, the procedure unfolds over $T$ iterations.
+If an algorithm $\mathbf{a_j}$ obtains rank 1 in at least one iteration, it is assigned to $\mathcal{F}$, and will
+receive the score of  $c/T$, where $c \le T$ is the number of times $\mathbf{a_j}$ obtains rank 1.
+For instance, when this procedure is applied to the distributions in Figure 1 (with $T=100$ and a sub-sample size 5 \p{I
+  don't think you ever mentioned the concept of ``sub-sample size''}) both "Yellow" and "Blue" are assigned to $\mathcal{F}$ with scores 0.55 and 0.45 respectively.
  
 %one could use test for significant differences (such as Kruskal-Walis ANOVA[hoefler]) between algorithm pairs and merge the ranks of algorithms if there is significant overlap.
 
@@ -272,22 +316,34 @@ Every algorithm $\mathbf{a}_j \in \mathcal{A}$ is measured 500 times ($|\mathbf{
 		\State $L, C \leftarrow [ \quad ]$ \Comment{Initialize empty lists}
 		\For{i = 1, ..., T}
 		\State Sub sample $\mathbf{\tilde{a}_{j}} \subset \mathbf{a_j} \quad \forall j$ \Comment{$ j \in \{1,..,P\}$} 
-		\State $\tilde{\mathcal{F}} \leftarrow \text{argmin}_j[min(\mathbf{\tilde{a}}_j  ) | \forall j]$ 
+		\State $\tilde{\mathcal{F}} \leftarrow \text{argmin}_j[\min(\mathbf{\tilde{a}}_j  ) | \forall j]$ 
 		\State $L$.append($\tilde{\mathcal{F}}$)
 		\EndFor
 		\State $\mathcal{F} \leftarrow $ unique elements in $\tilde{\mathcal{F}}$ \Comment{Let $|\mathcal{F}| = Q$}
 		\For{$ f_q$ in  $f_1,f_2,...,f_Q \in \mathcal{F}$}
-		\State $c \leftarrow$ number of occurances of $f_q$ in $\tilde{\mathcal{F}}$ 
+		\State $c \leftarrow$ number of occurences of $f_q$ in $\tilde{\mathcal{F}}$ 
 		\State $C$.append($c/T$)
 		\EndFor
 		\State return $(\mathcal{F} \times C)$
-	\end{algorithmic}
+        \end{algorithmic}
+        \p{the font for T is different here and in the text}
+        \p{do not use the syntax "C.append", or "L.append"; instead: append(c/T, C), ...}
+        \p{why [ ] instead of ( ) ? argmin$( blah ) $}
+        \p{in Let, use the different direction for the assignment:
+          Instead of "Let $|\mathcal{F}| = Q$", use Let $Q = |\mathcal{F}|$. Also, $Q$ seems to be a set. Use a small
+          letter for an integer}
+        \p{I don't see the need for "$\forall j$", given that $j$ is already in "argmin"}
+        \p{rewrite the second for loop with $i$ as the index, as opposed to $f_q$}        
 \end{algorithm}
 
 %Let $\mathcal{A}(x)$ be the set of all solution algorithms for certain linear algebra expression $x$. 
-In practice $N$ is much lesser than 500 and Procedure \ref{alg:fa} should account for the uncertainty in measurement data in capturing the true distributions. 
+In practice, $N$ will be much smaller than 500, and Procedure \ref{alg:fa} should account for the uncertainty in measurement data in capturing the true distributions. 
 %The scores obtained by Procedure \ref{alg:fa} still does have a meaningful translation to the indicate the distance between the algorithms; ideally, the scored obtained for "Red" and "Blue" should be comparable. This is because only one algorithm is assigned to $\mathcal{F}$ in every iteration. 
-The recommended approach is to use test for significant differences (such as Kruskal-Walis ANOVA\cite{hoefler2015scientific}) between algorithm pairs and merge the ranks of algorithms if there is no enough evidence of one algorithm dominating over the other. In this paper, we attempt to incorporate the test for significant differences in Procedure \ref{alg:fa} by re-defining the straight forward sorting function (in line 4) by introducing a three-way comparison function. As a consequence, both "Yellow" and "Blue" can get a score of 1.0.
+The recommended approach is to use test for significant differences (such as Kruskal-Walis
+ANOVA~\cite{hoefler2015scientific}) between algorithm pairs, and to merge the ranks of algorithms if there is not enough
+evidence of one algorithm dominating the other. In this paper, we incorporate the test for significant differences in
+Procedure \ref{alg:fa} by re-defining the straightforward sorting function (in line 4 or Procedure 1) by introducing a
+three-way comparison function. As a consequence, both "Yellow" and "Blue" will be able to receive a score of 1.0.
 
 \section{Methodology}
 \label{sec:met}
