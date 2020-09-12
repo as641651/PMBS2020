@@ -125,6 +125,12 @@ T.~Chen, Q.~Guo, O.~Temam, Y.~Wu, Y.~Bao, Z.~Xu, and Y.~Chen, ``Statistical
   performance comparisons of computers,'' \emph{IEEE Transactions on
   Computers}, vol.~64, no.~5, pp. 1442--1455, 2014.
 
+\bibitem{calotoiu2013}
+A.~Calotoiu, T.~Hoefler, M.~Poke, and F.~Wolf, ``Using automated performance
+  modeling to find scalability bugs in complex codes,'' in \emph{Proceedings of
+  the International Conference on High Performance Computing, Networking,
+  Storage and Analysis}, 2013, pp. 1--12.
+
 \bibitem{ritter2020learning}
 M.~Ritter, A.~Calotoiu, S.~Rinke, T.~Reimann, T.~Hoefler, and F.~Wolf,
   ``Learning cost-effective sampling strategies for empirical performance
