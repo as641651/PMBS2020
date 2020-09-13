@@ -45,12 +45,6 @@ E.~Peise and P.~Bientinesi, ``Performance modeling for dense linear algebra,''
   studies,'' \emph{The International Journal of High Performance Computing
   Applications}, vol.~33, no.~2, pp. 353--365, 2019.
 
-\bibitem{hoefler2015scientific}
-T.~Hoefler and R.~Belli, ``Scientific benchmarking of parallel computing
-  systems: twelve ways to tell the masses when reporting performance results,''
-  in \emph{Proceedings of the international conference for high performance
-  computing, networking, storage and analysis}, 2015, pp. 1--12.
-
 \bibitem{tirer2018image}
 T.~Tirer and R.~Giryes, ``Image restoration by iterative denoising and backward
   projections,'' \emph{IEEE Transactions on Image Processing}, vol.~28, no.~3,
@@ -131,24 +125,18 @@ A.~Calotoiu, T.~Hoefler, M.~Poke, and F.~Wolf, ``Using automated performance
   the International Conference on High Performance Computing, Networking,
   Storage and Analysis}, 2013, pp. 1--12.
 
+\bibitem{hoefler2015scientific}
+T.~Hoefler and R.~Belli, ``Scientific benchmarking of parallel computing
+  systems: twelve ways to tell the masses when reporting performance results,''
+  in \emph{Proceedings of the international conference for high performance
+  computing, networking, storage and analysis}, 2015, pp. 1--12.
+
 \bibitem{ritter2020learning}
 M.~Ritter, A.~Calotoiu, S.~Rinke, T.~Reimann, T.~Hoefler, and F.~Wolf,
   ``Learning cost-effective sampling strategies for empirical performance
   modeling,'' in \emph{2020 IEEE International Parallel and Distributed
   Processing Symposium (IPDPS)}.\hskip 1em plus 0.5em minus 0.4em\relax IEEE,
   2020, pp. 884--895.
-
-\bibitem{outlierremoval}
-A.~Rehn, J.~Holdsworth, and I.~Lee, ``Automated outlier removal for mobile
-  microbenchmarking datasets,'' in \emph{2015 10th International Conference on
-  Intelligent Systems and Knowledge Engineering (ISKE)}.\hskip 1em plus 0.5em
-  minus 0.4em\relax IEEE, 2015, pp. 578--585.
-
-\bibitem{androbench}
-J.-M. Kim and J.-S. Kim, ``Androbench: Benchmarking the storage performance of
-  android-based mobile devices,'' in \emph{Frontiers in Computer
-  Education}.\hskip 1em plus 0.5em minus 0.4em\relax Springer, 2012, pp.
-  667--674.
 
 \bibitem{kbest-kadioglu2011algorithm}
 S.~Kadioglu, Y.~Malitsky, A.~Sabharwal, H.~Samulowitz, and M.~Sellmann,
@@ -162,6 +150,10 @@ E.~Peise, ``Performance modeling and prediction for dense linear algebra,''
   Dissertation, RWTH Aachen University, Aachen, 2017. [Online]. Available:
   \url{https://publications.rwth-aachen.de/record/721186/files/721186.pdf}
 \BIBentrySTDinterwordspacing
+
+\bibitem{bubblesort}
+O.~Astrachan, ``Bubble sort: an archaeological algorithmic analysis,''
+  \emph{ACM Sigcse Bulletin}, vol.~35, no.~1, pp. 1--5, 2003.
 
 \bibitem{videoanalytics}
 G.~Ananthanarayanan, P.~Bahl, P.~Bod{\'\i}k, K.~Chintalapudi, M.~Philipose,
