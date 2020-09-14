@@ -74,7 +74,7 @@ pauldj@cs.umu.se}
 
 \begin{abstract}
 
-  For a given linear algebra problem, we consider those Solution algorithms that are mathematically equivalent to one
+  For a given linear algebra problem, we consider those solution algorithms that are mathematically equivalent to one
   another, and that mostly consist of a sequence of calls to kernels from optimized libraries such as BLAS and
   LAPACK. Although equivalent (at least in exact precision), those algorithms typically exhibit significant differences
   in terms of performance, and naturally, we are interested in finding the fastest one(s). In practice, we often observe
@@ -84,9 +84,6 @@ pauldj@cs.umu.se}
   comparisons and ranking them into equivalence classes, where more than one algorithm can obtain the same rank. We show
   that the relative performance leads to reliable identification of the fastest algorithms even with noisy system
   conditions.
-  \\[4mm]
-
-
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -99,14 +96,14 @@ pauldj@cs.umu.se}
 
 Given a set $\mathcal{A}$ of mathematically equivalent linear algebra algorithms, we aim to identify the subset
 $\mathcal{F} \subseteq \mathcal{A}$ containing all those algorithms that are ``equivalently'' fast to one another, and
-``noticeably'' faster than any algorithm in the subset $\mathcal{A}/\mathcal{F}$. We clarify the meaning of ``equivalent'' and
-``noticeable'' later in this section; for now, we simply state that in order to identify $\mathcal{F}$, 
+``noticeably'' faster than the algorithms in the subset $\mathcal{A}/\mathcal{F}$. We will clarify the meaning of ``equivalent'' and
+``noticeable'' shortly; for now, we simply state that in order to identify $\mathcal{F}$, 
 we develop an approach that assigns a higher score to the algorithms in
 $\mathcal{F}$ compared to those in $\mathcal{A}/\mathcal{F}$. Instead of aiming for a value that captures the quality of an algorithm in absolute terms, we seek to compute a relative score that compares the current algorithm with respect to the fastest algorithm(s) in $\mathcal{A}$. We refer to such scores as ``relative performance estimates''.
 
-It is well known that execution times are influenced by many factors, and that repeated measurements, even with same input data and same cache conditions, often result in different execution times\cite{peise2014cache} \cite{hoefler2010characterizing} \cite{peise2012performance}. Therefore, finding the best algorithm is a task that involves comparing distributions of execution time.
+It is well known that execution times are influenced by many factors, and that repeated measurements, even with same input data and same cache conditions, often result in different execution times~\cite{peise2014cache,hoefler2010characterizing,peise2012performance}. Therefore, finding the best algorithm is a task that involves comparing distributions of execution time.
 %
-In common practice, time measurements are summarized into statistical estimates (such as minimum or median execution time), which are then used to compare algorithms\cite{peise2019elaps}. But when system noise begins to have significant impact on program execution, it becomes difficult to summarize the performance into a single number; as a consequence, the comparisons are not consistent when the time measurements are reproduced, and this leads to inconsistency in the ranking of algorithms.
+In common practice, time measurements are summarized into statistical estimates (such as minimum or median execution time), which are then used to compare algorithms~\cite{peise2019elaps}. But when system noise begins to have significant impact on program execution, it becomes difficult to summarize the performance into a single number; as a consequence, the comparisons are not consistent when the time measurements are reproduced, and this leads to inconsistency in the ranking of algorithms.
 In order for one algorithm to be better (or worse) than the other, there should be ``noticeable`` difference in their distributions (Figure \ref{fig:diff}). On the other hand, the performance of algorithms are comparable if their distributions are ``equivalent`` or have significant overlap (Figure \ref{fig:eq}). 
 %
 Therefore, the result of comparing two algorithms can fall into one of the three categories - better, worse or equivalent. 
@@ -130,49 +127,85 @@ In this paper, we use this three-way comparison to cluster the set of algorithms
 	\label{fig:1}
 \end{figure}
 
-The algorithms in $\mathcal{A}$ represent different, alternative ways of computing the same mathematical expression. In exact arithmetic, they would all return the same quantity.  For instance,  in the expression $y_k := H^{T}y + (I_n - H^{T}H)x_k$, which appears in an image restoration application\cite{tirer2018image}, if the product $H^TH$ is computed explicitly, the code would perform a $\mathcal{O}(n^3)$ matrix-matrix multiplication; by contrast, by applying distributivity, one can rewrite this assignment as $y_k := H^{T}(y - Hx_k) + x_k$, obtaining an alternate algorithm which computes the same expression by only matrix-vector multiplications of cost $\mathcal{O}(n^2)$\footnote{Distributivity does not always lead to lower FLOP count.}. In this example, the two algorithms differ in terms of number of floating point operations (FLOPs), hence noticeable difference in terms of execution times are naturally expected. However, two algorithms may differ significantly in execution times even if they perform the same number of FLOPs, and it is even possible that higher FLOP count result in faster executions\cite{barthels2019linnea}.
+The algorithms in $\mathcal{A}$ represent different, alternative ways of computing the same mathematical expression. In
+exact arithmetic, those algorithms would all return the same quantity.  For instance,  in the expression $y_k := H^{T}y
++ (I_n - H^{T}H)x_k$, which appears in an image restoration application\cite{tirer2018image}, if the product $H^TH$ is
+computed explicitly, the code would perform a $\mathcal{O}(n^3)$ matrix-matrix multiplication; by contrast, by applying
+distributivity\footnote{In general, distributivity does not always lead to lower FLOP count.}, one can rewrite this
+assignment as $y_k := H^{T}(y - Hx_k) + x_k$, obtaining an alternate algorithm which computes the same expression by
+using only matrix-vector multiplications, for a cost of $\mathcal{O}(n^2)$. In this example, the two algorithms differ
+in the order of magnitude of floating point operations (FLOPs), hence noticeable difference in terms of execution times are naturally expected. However, two algorithms may differ significantly in execution times even if they perform the same number of FLOPs, and it is even possible that higher FLOP counts result in faster executions~\cite{barthels2019linnea}.
 
 %As mentioned earlier, to determine which of two algorithms is the fastest, their distributions of execution times should be compared.  The result will depend on the specific sizes of input matrices (operand sizes). Figure [1] shows the distributions of the two algorithms for image restoration for two different dimensions of $H$. When $H$ is small, both the algorithms are equally fast and we want to assign them both to $\mathcal{F}$. If the dimension of $H$ is large, the gains of distributivity starts showing and now only the second algorithm should be in $\mathcal{F}$. 
 
-In practice, many more than two algorithms have to be considered.  For instance, for the generalized least square problem $y := (X^TS^{-1}X)^{-1}X^{T}S^{-1}z$, it is possible to find more than 100 different algorithms\footnote{\ar{reference to github repo containing the julia code}} that compute the solution and that differ not more than 1.4x in terms of FLOP count.  
+In practice, one has to consider and compare more than just two algorithms.  For instance, for the generalized least square problem $y := (X^TS^{-1}X)^{-1}X^{T}S^{-1}z$, it is possible to find more than 100 different algorithms that compute the solution and that differ not more than 1.4x in terms of FLOP count.\footnote{\ar{reference to github repo containing the julia code}}  
 %the product $H^{T}H$ could be computed both by the kernel $gemm$, which implements matrix matrix multiplications, and by calling a different kernel $syrk$, which instead computes a symmetric rank-k update.
-All these different algorithms arise by considering properties of input matrices (such as symmetric positive definite, lower or upper triangular etc.), different paranthesizations for matrix chains, identifying common sub-expressions, etc \cite{psarras2019linear}. In this work, we consider solution algorithms generated by the Linnea framework \cite{barthels2019linnea}. For a given mathematical expression with fixed operand size, Linnea generates a family of algorithms (in the form of Julia code \cite{julia}) consisting of (mostly but not limited to) sequences of BLAS or LAPACK calls.
+All these different algorithms arise by considering properties of input matrices (such as symmetric positive definite, lower or upper triangular etc.), different paranthesizations for matrix chains, identifying common sub-expressions, etc \cite{psarras2019linear}. In this work, we consider solution algorithms generated by the Linnea framework~\cite{barthels2019linnea}. For a given mathematical expression with fixed operand size, Linnea generates a family of algorithms (in the form of Julia code~\cite{julia}) consisting of (mostly but not limited to) sequences of BLAS or LAPACK calls.
 
 \textbf{\textit{Contribution:} }The efficient computation of mathematical expressions is critical not only for complex
 simulations but also for time-critical computations done on resource-constrained hardware \cite{towardsEdgeComputing}
 (e.g., instantaneous object detection for autonomous driving applications \cite{connectedvehicles}). A framework that
 chooses the best algorithm should take into consideration at-least the systematic noise factors, such as  regular
-interrupts, impacts of  other applications that are simultaneously sharing the resources etc. Moreover, we observed that
-multiple algorithms can yield similar performance profiles. Therefore,  we develop a methodology for robust identification of not one, but a set of  fast algorithms for a given operational setting. To this end, we use the bootstrapping technique\cite{bootstrap} to rank the set of equivalent algorithms $\mathcal{A}$ into clusters, where more than one algorithm can obtain the same rank.
+interrupts, impacts of  other applications that are simultaneously sharing the resources, etc. Moreover, we observed that
+multiple algorithms can yield similar performance profiles. Therefore,  we develop a methodology for robust identification of not one, but a set of  fast algorithms for a given operational setting. To this end, we use the bootstrapping technique~\cite{bootstrap} to rank the set of equivalent algorithms $\mathcal{A}$ into clusters, where more than one algorithm can obtain the same rank.
 
-\textit{\textbf{Organization}}: In Section \ref{sec:rel}, we highlight the challenges and survey the state of art. In section \ref{sec:torel},  we introduce the idea behind relative performance. In section \ref{sec:met}, we describe our methodology to obtain the relative scores. In section \ref{sec:exp}, we explain the effects of parameters (that are introduced as a part of our framework) and evaluate our methodology. In section \ref{sec:app}, we discuss how this research fits in a bigger picture. Finally, in section \ref{sec:con}, we  summarize with some interesting applications and discuss the need for relative performance "modelling". 
+\textit{\textbf{Organization}}: In Sec.~\ref{sec:rel}, we highlight the challenges and survey the state of art. In
+Secs.~\ref{sec:torel} and~\ref{sec:met}, we introduce the idea behind relative performance, and describe a methodology
+to obtain relative scores, respectively; the methodology is then evaluated in Sec.~\ref{sec:exp}.
+In Sec.~\ref{sec:app}, we discuss how this research fits in a bigger picture, and finally, in Sec.~\ref{sec:con}, we
+draw conclusions and discuss the need for relative performance modelling. 
   
 
 \section{Related Works}
 \label{sec:rel}
 
-The efficient computation of linear algebra expressions is essential as those are at the heart of a myriad of
-applications in both scientific computing and data science. Users rely more and more on high-level languages and
-environments such as Julia\cite{julia}, Matlab\cite{MatlabOTB}, and Tensorflow\cite{tensorflow}, which accept linear
+Since linear algebra expressions are at the heart of a myriad of
+applications in both scientific computing and data science,
+their efficient computation is essential. Users rely more and more on high-level languages and
+environments such as Julia~\cite{julia}, Matlab~\cite{MatlabOTB}, and Tensorflow~\cite{tensorflow}, which accept linear
 algebra expressions as input, and internally map them to a sequence of calls to kernels from optimized libraries such as
 BLAS and LAPACK. This is precisely the type of algorithms we consider in this work. The problem of mapping a target
-expression to sequences of library calls is known as the Linear Algebra Mapping Problem (LAMP)\cite{psarras2019linear};
-any problem instance has many mathematically equivalent solutions, and these languages have to select the best
-one. However, it has been shown that most of them choose algorithms that are sub-optimal in terms of performance\cite{psarras2019linear}.
+expression to sequences of library calls is known as the Linear Algebra Mapping Problem (LAMP)~\cite{psarras2019linear};
+typical problem instances have many mathematically equivalent solutions, and these languages have to select the best
+one. However, it has been shown that most of them choose algorithms that are sub-optimal in terms of performance~\cite{psarras2019linear,barthels2019linnea}.
 
-The set of equivalent algorithms are ranked in order to identify the best candidate. One way of ranking different algorithms is by predicting the performance of each of them. The most common performance metric for linear algebra computations is the FLOP count. But FLOPs are not always direct indicators of the fastest code\cite{barthels2019linnea}. Iakymchuk et al. model the performance analytically based on FLOPs and memory access patterns\cite{iakymchuk2012modeling} \cite{iakymchuk2011execution}; while their models can represent program execution almost accurately, constructing them not only needs a deep understanding of the processor architecture, but also a detailed analysis of kernel implementations, which are not easily available.
+A general approach to identify the best candidate is by ranking them according to their predicted the performance.
+For linear algebra computations, the
+most common performance metric to be used as performance predictor is the FLOP count, even thought it is known that the
+number of FLOPs is not always a direct indicator of the fastest code~\cite{barthels2019linnea}. In addition to FLOPs,
+Iakymchuk et al. model the performance analytically based on memory access
+patterns~\cite{iakymchuk2012modeling,iakymchuk2011execution}; while their models can represent program execution
+accurately, their construction needs not only a deep understanding of the processor architecture, but also a detailed analysis of kernel implementations, which are not easily available.
 
-An ideal performance metric, which should reflect the execution time of the program, would still lack in reproducibility; this is because of system noise \cite{hoefler2010characterizing}, cache effects\cite{peise2014cache}, behaviour of
-collective communications \cite{agarwal2005impact}, and several other factors. Many authors have noted the lack of
-textbook statistical behaviours in execution times, and it is not realistic to eliminate entirely performance variations \cite{robustbenchmarking} \cite{trackingPerfVariation} \cite{statiscalperfCompare}. 
+Due to system noise~\cite{hoefler2010characterizing}, cache effects~\cite{peise2014cache}, behaviour of
+collective communications \cite{agarwal2005impact}, and several other factors, 
+even an ideal performance metric capable of capturing the execution time of the program would still lack in
+reproducibility. \p{these sentences are not connected}
+Many authors have noted the lack of textbook statistical behaviours in execution times, and it is not realistic to eliminate entirely performance variations~\cite{robustbenchmarking,trackingPerfVariation,statiscalperfCompare}. 
 
-Calotoiu et al. in \cite{calotoiu2013} use semi-analytical models, which are designed based on the understanding of computer programs behaviour in practical scenarios. Time measurements are used to determine coefficients of their models. But their focus is mainly on modelling scalability of a specific algorithm and not on identifying the best among several alternatives for a given number of processors. Our relative estimates does not capture the speed up of one algorithm over the other, but separates the fastest algorithm(s) from the rest for a given operational setting.
+Calotoiu et al. in \cite{calotoiu2013} use semi-analytical models, which are designed based on the understanding of
+computer programs behaviour in practical scenarios. Time measurements are used to determine coefficients of their
+models. The focus is mainly on modelling scalability of a specific algorithm and not on identifying the best among
+several alternatives for a given number of processors. For a given operational setting, our relative estimates do not
+capture the speed up of one algorithm over the other; instead, theyt separate the fastest algorithm(s) from the rest.
 % without an accurate assessment of its(their) performance.
 
-The problem we are tackling was also considered by Peise et al. in \cite{peise2012performance} but with a different approach. They model the performance (which is purely measurement-based) of BLAS calls that form the building blocks of a linear algebra program and then hierarchically compose them to predict statistical estimates of execution time for an entire algorithm. These estimates are then used to rank different variants of algorithms. However, they do not attempt to detect if two algorithms are equivalent and hence their rankings can be inconsistent (non-robust) with repeated measurements. In our work, we do not attempt to predict performance, but aim to make the performance metric more interpretable  and robust by capturing equivalence of two algorithms.  
+The problem we are tackling was also considered by Peise et al.~\cite{peise2012performance}.
+Their approach is to model the performance (which is purely measurement-based) of BLAS calls that form the building blocks of
+a linear algebra program and then hierarchically compose them to predict statistical estimates of execution time for an
+entire algorithm. These estimates are then used to rank different variants of algorithms. However, they do not attempt
+to detect if two algorithms are performance-equivalent and hence their rankings can be inconsistent (non-robust) to
+repetitions. The approach we propose aims to make the performance metric more interpretable and robust by capturing the equivalence of two algorithms.  
 
-Guidelines for interpretable benchmarking using statistical approaches are discussed by Hoefler et al. in \cite{hoefler2015scientific}. They recommend to compute confidence intervals or conduct tests for significant differences to find out if two
-algorithms are equivalent. But their focus is mainly on arriving at (absolute) performance estimates for an algorithm in isolation, whose interpretability depends on the number of measurements (sample size) used to compute such estimates. Ritter et al in \cite{ritter2020learning} proposed cost effective sampling strategies to build performance models, but again their focus is on identifying scalability bugs. On the other hand, we aim to compute interpretable "relative" estimates of algorithms in comparison to one and other, which are not influenced much by sample size (see Section \ref{sec:exp} B).
+Guidelines for interpretable benchmarking using statistical approaches are discussed by Hoefler et
+al.~\cite{hoefler2015scientific}, who recommend to compute confidence intervals or conduct tests for significant
+differences to decide whether or not two
+algorithms are performance-equivalent. Their focus is mainly on obtaining (absolute) performance estimates for an
+algorithm in isolation, whose interpretability depends on the number of measurements (sample size) used to compute such
+estimates. While Ritter et al.~\cite{ritter2020learning} proposed cost effective sampling strategies to build
+performance models, the focus is on identifying scalability bugs. By contrast, we aim to compute interpretable
+"relative" estimates of algorithms in comparison to one and other, which are not influenced much by sample size (see
+Sec.~\ref{sec:exp} B).
  
 
 \section{Towards Relative Performance}
