@@ -80,7 +80,7 @@ M.~R. Chernick, W.~Gonz{\'a}lez-Manteiga, R.~M. Crujeiras, and E.~B. Barrios,
   ``Bootstrap methods,'' 2011.
 
 \bibitem{MatlabOTB}
-``Matlab,'' 2019.
+``Matlab, the mathworks, inc.'' 2019.
 
 \bibitem{tensorflow}
 M.~Abadi, P.~Barham, J.~Chen, Z.~Chen, A.~Davis, J.~Dean, M.~Devin,
@@ -172,24 +172,6 @@ H.~T. Dinh, C.~Lee, D.~Niyato, and P.~Wang, ``A survey of mobile cloud
   computing: architecture, applications, and approaches,'' \emph{Wireless
   communications and mobile computing}, vol.~13, no.~18, pp. 1587--1611, 2013.
 
-\bibitem{smartPhonesForScientificComputing}
-J.~M. Rodr{\'i}guez, C.~Mateos, and A.~Zunino, ``Are smartphones really useful
-  for scientific computing?'' in \emph{Advances in New Technologies,
-  Interactive Interfaces and Communicability}, F.~Cipolla-Ficarra, K.~Veltman,
-  D.~Verber, M.~Cipolla-Ficarra, and F.~Kamm{\"u}ller, Eds.\hskip 1em plus
-  0.5em minus 0.4em\relax Berlin, Heidelberg: Springer Berlin Heidelberg, 2012,
-  pp. 38--47.
-
-\bibitem{raspberryEdgeComputing}
-M.~Maksimovi{\'c}, V.~Vujovi{\'c}, N.~Davidovi{\'c}, V.~Milo{\v{s}}evi{\'c},
-  and B.~Peri{\v{s}}i{\'c}, ``Raspberry pi as internet of things hardware:
-  performances and constraints,'' \emph{design issues}, vol.~3, no.~8, 2014.
-
-\bibitem{surveyOfComputationalOffloading2013}
-K.~Kumar, J.~Liu, Y.-H. Lu, and B.~Bhargava, ``A survey of computation
-  offloading for mobile systems,'' \emph{Mobile networks and Applications},
-  vol.~18, no.~1, pp. 129--140, 2013.
-
 \bibitem{edgeComputing2016}
 W.~Shi, J.~Cao, Q.~Zhang, Y.~Li, and L.~Xu, ``Edge computing: Vision and
   challenges,'' \emph{IEEE internet of things journal}, vol.~3, no.~5, pp.
@@ -200,49 +182,20 @@ P.~Garcia~Lopez, A.~Montresor, D.~Epema, A.~Datta, T.~Higashino, A.~Iamnitchi,
   M.~Barcellos, P.~Felber, and E.~Riviere, ``Edge-centric computing: Vision and
   challenges,'' 2015.
 
-\bibitem{EdgeComputingQuantifying}
-W.~Hu, Y.~Gao, K.~Ha, J.~Wang, B.~Amos, Z.~Chen, P.~Pillai, and
-  M.~Satyanarayanan, ``Quantifying the impact of edge computing on mobile
-  applications,'' in \emph{Proceedings of the 7th ACM SIGOPS Asia-Pacific
-  Workshop on Systems}, 2016, pp. 1--8.
-
 \bibitem{facerecog}
 S.~Yi, Z.~Hao, Z.~Qin, and Q.~Li, ``Fog computing: Platform and applications,''
   in \emph{2015 Third IEEE Workshop on Hot Topics in Web Systems and
   Technologies (HotWeb)}.\hskip 1em plus 0.5em minus 0.4em\relax IEEE, 2015,
   pp. 73--78.
 
-\bibitem{docker}
-D.~Merkel, ``Docker: lightweight linux containers for consistent development
-  and deployment,'' \emph{Linux journal}, vol. 2014, no. 239, p.~2, 2014.
-
-\bibitem{dockerForEdgeComputing}
-B.~I. {Ismail}, E.~{Mostajeran Goortani}, M.~B. {Ab Karim}, W.~{Ming Tat},
-  S.~{Setapa}, J.~Y. {Luke}, and O.~{Hong Hoe}, ``Evaluation of docker as edge
-  computing platform,'' in \emph{2015 IEEE Conference on Open Systems (ICOS)},
-  2015, pp. 130--135.
-
-\bibitem{dockerhpc}
-A.~Azab, ``Enabling docker containers for high-performance and many-task
-  computing,'' in \emph{2017 ieee international conference on cloud engineering
-  (ic2e)}.\hskip 1em plus 0.5em minus 0.4em\relax IEEE, 2017, pp. 279--285.
-
-\bibitem{pytorch}
-A.~Paszke, S.~Gross, F.~Massa, A.~Lerer, J.~Bradbury, G.~Chanan, T.~Killeen,
-  Z.~Lin, N.~Gimelshein, L.~Antiga \emph{et~al.}, ``Pytorch: An imperative
-  style, high-performance deep learning library,'' in \emph{Advances in neural
-  information processing systems}, 2019, pp. 8026--8037.
-
-\bibitem{cavbench}
-Y.~Wang, S.~Liu, X.~Wu, and W.~Shi, ``Cavbench: A benchmark suite for connected
-  and autonomous vehicles,'' in \emph{2018 IEEE/ACM Symposium on Edge Computing
-  (SEC)}.\hskip 1em plus 0.5em minus 0.4em\relax IEEE, 2018, pp. 30--42.
-
-\bibitem{edgeaibench}
-T.~Hao, Y.~Huang, X.~Wen, W.~Gao, F.~Zhang, C.~Zheng, L.~Wang, H.~Ye, K.~Hwang,
-  Z.~Ren \emph{et~al.}, ``Edge aibench: towards comprehensive end-to-end edge
-  computing benchmarking,'' in \emph{International Symposium on Benchmarking,
-  Measuring and Optimization}.\hskip 1em plus 0.5em minus 0.4em\relax Springer,
-  2018, pp. 23--30.
+\bibitem{clonecloud}
+\BIBentryALTinterwordspacing
+B.-G. Chun, S.~Ihm, P.~Maniatis, M.~Naik, and A.~Patti, ``Clonecloud: Elastic
+  execution between mobile device and cloud,'' in \emph{Proceedings of the
+  Sixth Conference on Computer Systems}, ser. EuroSys '11.\hskip 1em plus 0.5em
+  minus 0.4em\relax New York, NY, USA: Association for Computing Machinery,
+  2011, p. 301–314. [Online]. Available:
+  \url{https://doi.org/10.1145/1966445.1966473}
+\BIBentrySTDinterwordspacing
 
 \end{thebibliography}
