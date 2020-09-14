@@ -84,6 +84,7 @@ pauldj@cs.umu.se}
   comparisons and ranking them into equivalence classes, where more than one algorithm can obtain the same rank. We show
   that the relative performance leads to reliable identification of the fastest algorithms even with noisy system
   conditions.
+  \p{everywhere: replace $...$ and $..$ with $\dots$} 
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -131,7 +132,7 @@ The algorithms in $\mathcal{A}$ represent different, alternative ways of computi
 exact arithmetic, those algorithms would all return the same quantity.  For instance,  in the expression $y_k := H^{T}y
 + (I_n - H^{T}H)x_k$, which appears in an image restoration application\cite{tirer2018image}, if the product $H^TH$ is
 computed explicitly, the code would perform a $\mathcal{O}(n^3)$ matrix-matrix multiplication; by contrast, by applying
-distributivity\footnote{In general, distributivity does not always lead to lower FLOP count.}, one can rewrite this
+distributivity,\footnote{In general, distributivity does not always lead to lower FLOP count.} one can rewrite this
 assignment as $y_k := H^{T}(y - Hx_k) + x_k$, obtaining an alternate algorithm which computes the same expression by
 using only matrix-vector multiplications, for a cost of $\mathcal{O}(n^2)$. In this example, the two algorithms differ
 in the order of magnitude of floating point operations (FLOPs), hence noticeable difference in terms of execution times are naturally expected. However, two algorithms may differ significantly in execution times even if they perform the same number of FLOPs, and it is even possible that higher FLOP counts result in faster executions~\cite{barthels2019linnea}.
@@ -204,7 +205,7 @@ algorithms are performance-equivalent. Their focus is mainly on obtaining (absol
 algorithm in isolation, whose interpretability depends on the number of measurements (sample size) used to compute such
 estimates. While Ritter et al.~\cite{ritter2020learning} proposed cost effective sampling strategies to build
 performance models, the focus is on identifying scalability bugs. By contrast, we aim to compute interpretable
-"relative" estimates of algorithms in comparison to one and other, which are not influenced much by sample size (see
+``relative" estimates of algorithms in comparison to one and other, which are not influenced much by sample size (see
 Sec.~\ref{sec:exp} B).
  
 
@@ -212,27 +213,32 @@ Sec.~\ref{sec:exp} B).
 \label{sec:torel}
 %The ranking methodology described in section 2 establishes a notion of distance (in terms of performance) between the algorithms in $\mathcal{A}$.
 Fundamentally, we want to compute a score for every algorithm in $\mathcal{A}$ that indicates its chance of being the fastest algorithm. As an example, consider the distributions of execution times shown in Fig.~\ref{fig:1} for three different algorithms (Red, Blue and
-Yellow) that solve the Ordinary Least Square problem\footnote{The pseudocode of solution algorithms are shown in Appendix A. For the sake of
+Yellow) that solve the Ordinary Least Square problem:\footnote{The pseudocode of solution algorithms are shown in Appendix A. For the sake of
   explanation, we only consider three solution algorithms; for this problem, Linnea generates many more than three,
-  as explained in Sec.~4 of~\cite{barthels2019linnea}.}: $(X^TX)^{-1}X^{T}y$. 
-The distributions were obtained by measuring the execution time of every algorithm $\mathbf{a}_j \in \mathcal{A}$ 500 times ($|\mathbf{a}_j| = 500$).
+  as explained in Sec.~4 of~\cite{barthels2019linnea}.} $(X^TX)^{-1}X^{T}y$. 
+The distributions were obtained by measuring 500 times the execution time of every algorithm $\mathbf{a}_j \in \mathcal{A}$  ($|\mathbf{a}_j| = 500$).
 In order to ensure that the time measurements are unbiased of system noise, we adapt the following procedure: Let the set of all executions be $\mathcal{E} = \mathbf{a}_1 \oplus \mathbf{a}_2 \oplus \mathbf{a}_3$, where $\oplus$
 is a concatenation operation. The set $\mathcal{E}$ is shuffled and the executions are timed. Every execution $e \in
 \mathcal{E}$ is run twice and only the second measurement is considered; the first measurement is mostly an outlier due
 to loading and caching of data and instructions\cite{peise2019elaps}. 
-A "straightforward'' approach to relatively score algorithms consists in finding the minimum (or median, or mean) execution time of every algorithm $\mathbf{a}_j \in \mathcal{A}$ and then use that to construct a ranking~\cite{peise2012performance}. By doing this, every algorithm
-  would obtain a unique rank. If we choose to assign the algorithm with rank 1 to the set of fastest algorithm $\mathcal{F}$, then only one algorithm could be assigned to $\mathcal{F}$ although the distributions "Yellow" and "Blue" are nearly identical. This will lead to inconsistent rankings when all the executions $\mathcal{E}$ are repeated. Reproducibility of rankings is essential in order to derive mathematically sound performance predictions (Modelling or prediction of relative performance is a part of our future work and it is out of the scope of this article).  In order to ensure reproducibility of relative performance estimates, both "Yellow" and "Blue" should be assigned to $\mathcal{F}$. 
+
+A ``straightforward'' approach to relatively score algorithms consists in finding the minimum (or median, or mean) execution time of every algorithm $\mathbf{a}_j \in \mathcal{A}$ and then use that to construct a ranking~\cite{peise2012performance}. By doing this, every algorithm
+  would obtain a unique rank. If we choose to assign the algorithm with rank 1 to the set of fastest algorithm
+  $\mathcal{F}$, then only one algorithm could be assigned to $\mathcal{F}$ although the distributions Yellow and
+  Blue are nearly identical. This will lead to inconsistent rankings when all the executions $\mathcal{E}$ are
+  repeated. Reproducibility of rankings is essential in order to derive mathematically sound performance
+  predictions.\footnote{The modelling and prediction of relative performance is the objective of our future work, and it is out of the scope of this article.}  In order to ensure reproducibility of relative performance estimates, both Yellow and Blue should be assigned to $\mathcal{F}$. 
   To this end, one could choose the $k$-best algorithms\cite{kbest-kadioglu2011algorithm} with $k=2$, and  assign both
-  "Yellow" and "Blue" to $\mathcal{F}$. However, the fixed value $k=2$  might not be
+  Yellow and Blue to $\mathcal{F}$. However, the fixed value $k=2$  might not be
   suitable for other scenarios in which either one algorithm or more than two algorithms are superior to the rest. 
 
 
- Bootstrapping\cite{bootstrap} is a common procedure to extract more information from the distribution. Here, the "straightforward'' approach is repeated $T$ times, and for each iteration, $K < 500$ measurements are sampled from the original 500 measurements and rankings are constructed. If an algorithm $\mathbf{a_j}$ obtains rank 1 in at least one out of $T$ iterations, it is assigned to $\mathcal{F}$, and will
+ Bootstrapping\cite{bootstrap} is a common procedure to extract more information from the distribution. Here, the ``straightforward'' approach is repeated $T$ times, and for each iteration, $K < 500$ measurements are sampled from the original 500 measurements and rankings are constructed. If an algorithm $\mathbf{a_j}$ obtains rank 1 in at least one out of $T$ iterations, it is assigned to $\mathcal{F}$, and will
  receive the score of  $c/T$, where $c \le T$ is the number of times $\mathbf{a_j}$ obtains rank 1. The steps for
  this approach, adapted to our problem, are shown in Procedure \ref{alg:fa}. For a given set of algorithms $
  \mathbf{a}_1,\mathbf{a}_2 ,..., \mathbf{a}_p\in \mathcal{A}$ for which the execution times are measured $N$ times each,
  Procedure \ref{alg:fa} returns the set of fastest algorithms $f_1, f_2, ..., f_q \in  \mathcal{F}$, ($q \le p$) each with an associated score $c_1,c_2,...c_q$.
- For instance, when this procedure is applied to the distributions in Figure 1 (with $T=100$ and a sample size $K=5$ ) both "Yellow" and "Blue" are assigned to $\mathcal{F}$ with scores 0.55 and 0.45 respectively. 
+ For instance, when this procedure is applied to the distributions in Fig.~\ref{fig:1} (with $T=100$ and a sample size $K=5$ ) both Yellow and Blue are assigned to $\mathcal{F}$ with scores 0.55 and 0.45 respectively. 
 
 \begin{algorithm}
 	\caption{ Get$\mathcal{F}$$(\mathcal{A})$ }
@@ -244,7 +250,8 @@ A "straightforward'' approach to relatively score algorithms consists in finding
 		\For{i = 1, ..., $T$}
 		\State sample $K$ values $\mathbf{\tilde{a}_{j}} \subset \mathbf{a_j} \quad \forall j$ \Comment{$ j \in \{1,..,p\}$} 
 		\State append($\text{argmin}_j(\min(\mathbf{\tilde{a}}_j ), L)$ 
-%		\State append($\tilde{\mathcal{F}},L$)
+                \p{parentheses do not match!!}
+                % \State append($\tilde{\mathcal{F}},L$)
 		\EndFor
 		\State $\mathcal{F} \leftarrow $ unique elements in $L$ \Comment{ $q = |\mathcal{F}| $}
 		\For{$i$ in  $f_1,f_2,...,f_q \in \mathcal{F}$}
@@ -252,14 +259,18 @@ A "straightforward'' approach to relatively score algorithms consists in finding
 		\State append($c/T, C$)
 		\EndFor
 		\State return $(\mathcal{F} \times C)$
-        \end{algorithmic}    
+              \end{algorithmic}
+              \p{for argmin, use the code here. j should go under}
+%                \usepackage{amsmath}
+%\DeclareMathOperator*{\argmax}{arg\,max}
+%\DeclareMathOperator*{\argmin}{arg\,min}
 \end{algorithm}
 
 %Let $\mathcal{A}(x)$ be the set of all solution algorithms for certain linear algebra expression $x$. 
 However, in practical applications, the execution times of algorithms are typically
-measured only a few times (likely fewer than 500 times, possibly just once), and therefore, only a snapshot of the distributions
-shown in Figure \ref{fig:1} will be available. Procedure \ref{alg:fa} does not account for the uncertainty in measurement data in capturing the true distributions. 
-%The scores obtained by Procedure \ref{alg:fa} still does have a meaningful translation to the indicate the distance between the algorithms; ideally, the scored obtained for "Red" and "Blue" should be comparable. This is because only one algorithm is assigned to $\mathcal{F}$ in every iteration. 
+measured only a few times (likely much fewer than 500 times, possibly just once), and therefore, only a snapshot of the distributions
+shown in Fig.~\ref{fig:1} will be available. Procedure \ref{alg:fa} does not account for the uncertainty in measurement data in capturing the true distributions. 
+%The scores obtained by Procedure \ref{alg:fa} still does have a meaningful translation to the indicate the distance between the algorithms; ideally, the scored obtained for Red and Blue should be comparable. This is because only one algorithm is assigned to $\mathcal{F}$ in every iteration. 
 The recommended approach is to use test for significant differences (such as Kruskal-Walis
 ANOVA~\cite{hoefler2015scientific}) between algorithm pairs, and to merge the ranks of algorithms if there is not enough
 evidence of one algorithm dominating the other. In this paper, we incorporate the test for significant differences in
@@ -269,11 +280,20 @@ three-way comparison function.
 \section{Methodology}
 \label{sec:met}
 
-In order to compute the relative score for an algorithm, the first step consist of sorting all the mathematically equivalent linear algebra algorithms $\mathbf{a}_1,\mathbf{a}_2, ..., \mathbf{a}_p \in \mathcal{A}$ and assigning them to one of the equivalence classes $r_1, r_2, ...r_w$. The number of classes (or ranks) is $w \le p$ as more than one algorithm can obtain the same rank. For illustration, we consider an example where four algorithms $\mathbf{a}_1,\mathbf{a}_2, \mathbf{a}_3, \mathbf{a}_4$ could be sorted and ranked as $< (\mathbf{a}_2,1), (\mathbf{a}_4,1), (\mathbf{a}_1,2), (\mathbf{a}_3,2) >$. All the algorithm with rank 1 are assigned to the set of fastest algorithms $\mathcal{F}$. The assignments of ranks need not be deterministic. So in the second step, we bootstrap and repeat this procedure $T$ times and all the algorithms that obtained rank 1 at least once are assigned to $\mathcal{F}$. Then, we follow the steps from line 5 - 9 in Procedure \ref{alg:fa} to compute relative scores. 
+In order to compute the relative score for an algorithm, the first step consist of sorting all the mathematically
+equivalent linear algebra algorithms $\mathbf{a}_1,\mathbf{a}_2, ..., \mathbf{a}_p \in \mathcal{A}$ and assigning them
+to one of the equivalence classes $r_1, r_2, ...r_w$. The number of classes (or ranks) is $w \le p$ as more than one
+algorithm can obtain the same rank. For illustration, we consider an example where four algorithms
+$\mathbf{a}_1,\mathbf{a}_2, \mathbf{a}_3, \mathbf{a}_4$ could be sorted and ranked as $< (\mathbf{a}_2,1),
+(\mathbf{a}_4,1), (\mathbf{a}_1,2), (\mathbf{a}_3,2) >$. \p{Since we are already using $<$ and $>$ a whole lot, I think
+  you should replace everywhere $< (\mathbf{a}_2,1), (\mathbf{a}_4,1), (\mathbf{a}_1,2), (\mathbf{a}_3,2) >$
+  with $\left\{(\mathbf{a}_2,1), (\mathbf{a}_4,1), (\mathbf{a}_1,2), (\mathbf{a}_3,2)\right\}$.}
+  All the algorithms with rank 1 are assigned to the set of fastest algorithms $\mathcal{F}$. The assignments of ranks
+  need not be deterministic. So in the second step, \p{which ``second step''? Maybe you mean: ``Hence, in a second step, ...''} we bootstrap and repeat this procedure $T$ times and all the algorithms that obtained rank 1 at least once are assigned to $\mathcal{F}$. Then, we follow the steps from line 5 - 9 in Procedure \ref{alg:fa} to compute relative scores. 
 
 The execution time of every algorithm $\mathbf{a} \in \mathcal{A}$ is
 measured $N$ times. The measurements are stored in an array of size N; hence, one can also denote
-$\mathbf{a} \in \mathbb{R}^N$. We do not make any assumptions about the nature of the distribution. To compare the
+$\mathbf{a} \in \mathbb{R}^N$. We do not make any assumptions about the nature of the distributions of timings. To compare the
 distributions of two algorithms $\mathbf{a_i},\mathbf{a_j} \in \mathcal{A}$, we follow the steps indicated in Procedure
 \ref{alg:compare}.
 %\p{``method'' is not a common word for this. ``Algorithm'', ``Procedure'', ``Test'', ... Later you call it ``function'', which is also ok}
@@ -284,7 +304,8 @@ The comparison yields one of three outcomes:
 \item Outcome B: algorithm  $\mathbf{a_i}$ is as good as $\mathbf{a_j}$ $(\sim)$
 \item Outcome C: algorithm  $\mathbf{a_i}$ is worse than $\mathbf{a_j}$ $(>)$
 \end{itemize}
-Outcomes A and C imply that there are noticeable differences between the distributions; outcome B implies that the distributions are equivalent.
+Outcomes A and C imply that there are noticeable differences between the distributions; outcome B implies that the
+distributions are performance-wise equivalent. 
 \begin{algorithm}
 	\caption{Compare $(\mathbf{a_i}, \mathbf{a_j})$ }
 	\label{alg:compare}
@@ -302,7 +323,10 @@ Outcomes A and C imply that there are noticeable differences between the distrib
 		\EndIf
 		\EndFor
 		\If{$\frac{p}{M} \geq threshold$ }
-		\State return $<$ \Comment{$\mathbf{a_i}$ is better than $\mathbf{a_j}$}
+		\State return $<$ \p{for readability: return ``$<$''?}
+
+                \p{or
+                return $\mathbf{a_i} < \mathbf{a_j}$ } \Comment{$\mathbf{a_i}$ is better than $\mathbf{a_j}$}
 		\ElsIf{$\frac{p}{M} < 1 - threshold$}
 		\State return $>$ \Comment{$\mathbf{a_i}$ is worse than $\mathbf{a_j}$}
 		\Else
@@ -312,13 +336,29 @@ Outcomes A and C imply that there are noticeable differences between the distrib
       \end{algorithm}
 %\p{The level of detail is good, but the connection is missing. ``To this end'' is not linking to anything.
 %  Also, use references (``one could also use other metrics'' -- as done in [ref], [ref].}  
-In Procedure \ref{alg:compare}, the distributions $\mathbf{a_i}$ and $\mathbf{a_j}$ are sampled ($\mathbf{\tilde{a}_i} \subset \mathbf{a_i}$ and $\mathbf{\tilde{a}_j} \subset \mathbf{a_j}$) with sample size $K < N $ and the minimum
-execution time from the respective samples are compared. This procedure is repeated $M$ times. In theory, one could
+In Procedure \ref{alg:compare}, the distributions $\mathbf{a_i}$ and $\mathbf{a_j}$ are sampled ($\mathbf{\tilde{a}_i}
+\subset \mathbf{a_i}$ and $\mathbf{\tilde{a}_j} \subset \mathbf{a_j}$) with sample size $K < N$ \p{or $K \le N$?}  and the minimum
+execution time from the respective samples are compared. This procedure is repeated $M$ times.
+\p{can we quantify $M$ in any way? $M\ge 1$ is obvious. What else? $1 \le M \le N ???$, anything?} 
+In theory, one could
 also use other metrics like mean or median execution time or even combination of multiple metrics across different
-comparisons. Peise et al. in \cite{peisethesis} show that minimum and median statistic are less sensitive to fluctuations in execution time for linear algebra computations.  Let $e_i$ and $e_j$ be the minimum execution time of samples  $\mathbf{\tilde{a}_i}$ and $\mathbf{\tilde{a}_j}$ respectively. The probability that $e_i$ is less than $e_j$ is approximated from the results of $M$ comparisons. That is, if $e_i$ is less than $e_j$ in $p$ out of $M$ comparisons, then the empirical probability $P[e_i \le e_j]$ is $p/M$. The outcome of the Compare function (Procedure \ref{alg:compare}) is determined based on this empirical probability (see lines 9 - 14 in Procedure \ref{alg:compare}). The outcome of Compare function is not entirely deterministic; if $p/M \to threshold$, then  $\mathbf{a_i}$ is at the threshold of being better than $\mathbf{a_j}$ and the outcome can randomly switch between A ($<$) and B ($\sim$) when the Compare function is repeated (even for the same input distributions). Hence the comparisons need not be transitive;  $\mathbf{a_1} < \mathbf{a_2}$ and
+comparisons. Peise et al. in \cite{peisethesis} show that minimum and median statistic are less sensitive to
+fluctuations in execution time for linear algebra computations.
+
+Let $e_i$ and $e_j$ be the minimum execution time of samples  $\mathbf{\tilde{a}_i}$ and $\mathbf{\tilde{a}_j}$,
+respectively. The probability that $e_i$ is less than $e_j$ is approximated from the results of $M$ comparisons. That
+is, if $e_i$ is less than $e_j$ in $p$ out of $M$ comparisons, then the empirical probability $P[e_i \le e_j]$ is
+$p/M$. The outcome of the Compare function (Procedure \ref{alg:compare}) is determined based on this empirical
+probability (see lines 9 - 14 in Procedure \ref{alg:compare}). It should be clear that the outcome of Compare function is not entirely
+deterministic: If $p/M \to threshold$, then  $\mathbf{a_i}$ approaches the ``state of being better'' than $\mathbf{a_j}$ and
+the outcome can tip over A ($<$) or B ($\sim$) when the Compare function is repeated (even for the same input distributions). Hence the comparisons need not be transitive;  $\mathbf{a_1} < \mathbf{a_2}$ and
 $\mathbf{a_2} < \mathbf{a_3} $ does not imply $\mathbf{a_1} < \mathbf{a_3}$.
 
-\textbf{\textit{Effect of} $K$:} As $K \to N$, the minimum estimates of samples ($e_i, e_j$) would approximate the minimum execution time ($m_i, m_j$) of the distributions $\mathbf{a_i}$ and $\mathbf{a_j}$ respectively and the comparison in line 7 of Procedure \ref{alg:compare} becomes more and more deterministic. As a consequence, $p/M \to 0 \lor 1$ and outcome B ($\sim$) becomes less and less likely. When $K=N$, outcome B becomes impossible and this invalidates the advantages of bootstrapping. When $K \to 1$, the minimum estimates of samples ($e_i, e_j$) would point to an instance of execution time ($t_i, t_j$) from the distribution. Then outcome B becomes more likely even for marginal overlap of distributions (as in Fig \ref{fig:diff}), especially when $threshold$ is high or $M$ is small.
+\textbf{\textit{Effect of} $K$:} As $K \to N$, the minimum estimates of samples ($e_i, e_j$) approximates the
+minimum execution time ($m_i, m_j$) of the distributions $\mathbf{a_i}$ and $\mathbf{a_j}$, respectively, and the
+comparison in line 7 of Procedure \ref{alg:compare} becomes more and more deterministic. As a consequence, $p/M \to 0
+\lor 1$ \p{$\lor$ is the wrong symbol. This is a logical ``or''. You instead want to list two elements, that is, $0 | 1$} and outcome B
+($\sim$) becomes less and less likely \p{what does $\sim$ mean here?}. When $K=N$, \p{before we wrote that $K<N$. Maybe replace with $K \le N$ ?} outcome B becomes impossible and this invalidates the advantages of bootstrapping. When $K \to 1$, the minimum estimates of samples ($e_i, e_j$) points to an instance of execution time ($t_i, t_j$) from the distribution. Then outcome B becomes more likely even for marginal overlap of distributions (as in Fig \ref{fig:diff}), especially when $threshold$ is high or $M$ is small.
 
 
 \textbf{\textit{Effect of }$threshold$:} Valid values of $threshold$ for Procedure \ref{alg:compare} lie in the range $[0.5,1]$. When $threshold \to 0.5$, the outcome B ($\sim$) becomes
@@ -326,7 +366,7 @@ less and less likely (and impossible for $threshold=0.5$), while for $threshold 
 and C ($>$) becomes stricter and outcome B becomes more and more likely. 
 
 The Compare function (Procedure \ref{alg:compare}) is used in Procedure \ref{alg:sort} to sort the algorithms $\mathbf{a}_1,\mathbf{a}_2, ..., \mathbf{a}_p \in \mathcal{A}$ and assign them to one of the equivalence classes $r_1, r_2, ..., r_w$.
-The swapping procedure using bubble-sort\cite{bubblesort} with three-way comparisons is shown in Procedure \ref{alg:sort}.
+Procedure~\ref{alg:sort} illustrates the swapping procedure that uses bubble-sort\cite{bubblesort} with three-way comparisons.
 \begin{algorithm}
 	\caption{Sort $(\mathcal{A})$ }
 	\label{alg:sort}
@@ -345,6 +385,7 @@ The swapping procedure using bubble-sort\cite{bubblesort} with three-way compari
 		\State Swap $\mathbf{s}_{j}$ and $\mathbf{s}_{j+1}$ \label{lst:swap}
 		\If{$r_{j+1} = r_j$} \label{lst:h1}
 		\If{$r_{j-1} !=r_j$ or $j=0$}
+                \p{ $!=$ }
 		\State Increment ranks $r_{j+1}, ..., r_p$ by 1 \label{lst:h2}
 		\EndIf
 		\Else
@@ -363,44 +404,76 @@ The swapping procedure using bubble-sort\cite{bubblesort} with three-way compari
 		\EndFor
 		\State return $< (\mathbf{a}_{s[1]},r_1), ..., (\mathbf{a}_{s[p]},r_w) >$
               \end{algorithmic}
-\end{algorithm}
-All the algorithms $\mathbf{a}_1, \mathbf{a}_2, .., \mathbf{a}_p \in \mathcal{A}$ are first initialized with consecutive ranks $r_j \leftarrow j$ (where $j \in\{1,2,..p\}$) according to the order in which they are given as input $<1,2,...,p> $. Initially, the number of equivalence classes $w$ is same as the number of algorithms $p$. As more than one algorithm can obtain the same rank, we use different index array to map to the position of algorithms in the sorted sequence $\mathcal{S} : < \mathbf{s}_1, \mathbf{s}_2, ..., \mathbf{s}_p >$. In the beginning, $s_j \leftarrow j$ and $ \mathbf{a}_{s[j]} \leftarrow \mathbf{a}_j$. Thus, Procedure \ref{alg:sort} sorts the initial sequence $< (\mathbf{a}_1,1), .., (\mathbf{a}_p,p) >$ and returns $< (\mathbf{a}_{s[1]},1), .., (\mathbf{a}_{s[p]},w) >$.
+            \end{algorithm}
+All the algorithms $\mathbf{a}_1, \mathbf{a}_2, .., \mathbf{a}_p \in \mathcal{A}$ are first initialized with consecutive
+ranks $r_j \leftarrow j$ (where $j \in\{1,2,\dots,p\}$) according to the order in which they are given as input $<1,2,...,p>
+$.
+Initially, the number of equivalence classes $w$ is same as the number of algorithms $p$. As more than one algorithm
+can obtain the same rank, we use different index array to map to the position of algorithms in the sorted sequence
+$\mathcal{S} : < \mathbf{s}_1, \mathbf{s}_2, ..., \mathbf{s}_p >$. In the beginning, $s_j \leftarrow j$ and $
+\mathbf{a}_{s[j]} \leftarrow \mathbf{a}_j$.
+\p{I got lost. What is ${a}_{s[j]}$? What do the [ ] mean?} 
+Thus, Procedure \ref{alg:sort} sorts the initial sequence $< (\mathbf{a}_1,1), .., (\mathbf{a}_p,p) >$ and returns $< (\mathbf{a}_{s[1]},1), .., (\mathbf{a}_{s[p]},w) >$.
+\p{this is not immediately clear to me. Then it has to be explained}
 % and slots $s_j \leftarrow j$ , $ \mathbf{a}_{s[j]} \leftarrow \mathbf{a}_j$ where $j \in\{1,2,..p\}$; as more than one algorithm can obtain the same rank, we use different indices for positions (slots) of the algorithms ($s_j$) in the sorted sequence and ranks ($r_j$).  
- Starting from the first element in the sequence,  bubble sort\cite{bubblesort} compares adjacent algorithms and swaps indices if the algorithm occurring later in the sequence $\mathbf{a}_{s[j+1]}$ is better than its previous algorithm $\mathbf{a}_{s[j]}$ and the ranks are updated. To understand the rank update rules, consider the example in Fig \ref{fig:sort}, which shows the intermediate steps while sorting the distributions of four algorithms $\mathbf{a}_1, \mathbf{a}_2, \mathbf{a}_3,\mathbf{a}_4$ (initialized with rank 1,2,3,4 respectively). All possible update rules that one might encounter could be seen in one of the intermediate steps of this example.
+ Starting from the first element in the sequence,  bubble sort\cite{bubblesort} compares adjacent algorithms and swaps
+ indices if the algorithm occurring later in the sequence $\mathbf{a}_{s[j+1]}$ is better than its previous algorithm
+ $\mathbf{a}_{s[j]}$ \p{do not use ``previous''. Alternatives: ``preceeding''? ``the algorithm to its left''?
+   ``predecessor''?}and the ranks are updated. To understand the rank update rules, consider the example in Fig
+ \ref{fig:sort}, which shows the intermediate steps while sorting the distributions of four algorithms $\mathbf{a}_1,
+ \mathbf{a}_2, \mathbf{a}_3,\mathbf{a}_4$ (initialized with ranks 1,2,3,4 respectively). All possible update rules that
+ one might encounter appear in one of the intermediate steps of this example.
 %If an algorithm $\tilde{s}_{j+1}$ is better than its previous algorithm in sequence $\tilde{s}_j$, then the position index of the two algorithms are swapped.
 
 \begin{enumerate}
 	\item 
-          In the first pass of bubble sort, pair-wise comparison of adjacent algorithms are done starting from the first element in sequence. The current sequence is $<\mathbf{a}_1, \mathbf{a}_2, \mathbf{a}_3, \mathbf{a}_4>$
-          So as a first step, algorithms $\mathbf{a}_1$ and $\mathbf{a}_2$ are compared, and 
+          In the first pass of bubble sort, pair-wise comparison of adjacent algorithms are done starting from the first
+          element in sequence. Currently, the sequence is $<\mathbf{a}_1, \mathbf{a}_2, \mathbf{a}_3, \mathbf{a}_4>$.
+          As a first step, algorithms $\mathbf{a}_1$ and $\mathbf{a}_2$ are compared, and 
           $\mathbf{a}_2$ ends up being faster. As the slower algorithm should be shifted towards the end of sequence, $\mathbf{a}_1$ and $\mathbf{a}_2$ swap positions  (line \ref{lst:swap} in
-          Procedure \ref{alg:sort}). Since at this point all the algorithms have unique ranks, $\mathbf{a}_2$ and
+          Procedure \ref{alg:sort}). Since all the algorithms still have unique ranks, $\mathbf{a}_2$ and
           $\mathbf{a}_1$ also exchange their ranks and no special rules for updating ranks are applied.
           So, $\mathbf{a}_2$ and $\mathbf{a}_1$ receive rank 1 and 2, respectively.
 	
 	\item Next, algorithm $\mathbf{a}_1$ is compared with $\mathbf{a}_3$;
+          \p{should we write:
+            "Next, algorithm $\mathbf{a}_1$ is compared with its right neighbor (or with its successor), $\mathbf{a}_3$";}
           since they are just as good as one another, 
           no swap takes place. Now, the rank of $\mathbf{a}_3$ should also indicate that it is as good as $\mathbf{a}_1$;
           so $\mathbf{a}_3$ is given the same rank as $\mathbf{a}_1$ 
             and the rank of $\mathbf{a_4}$ is corrected by
          decrementing 1. (line \ref{lst:ag1}-\ref{lst:ag2} in Procedure \ref{alg:sort}). Hence $\mathbf{a}_1$ and $\mathbf{a}_3$ have rank 2 and $\mathbf{a}_4$ is corrected to rank 3.
 	
-	\item Algorithm $\mathbf{a}_4$ results to be better than $\mathbf{a}_3$, so their positions are
-          swapped. However, ranks cannot be exchanged the same way it happened in step 1;
-          otherwise, $\mathbf{a}_3$ will receive rank 3, while it was evaluated to be
-          as good as $\mathbf{a}_1$ which has rank 2 (recall from step 2: $\mathbf{a}_3 \sim \mathbf{a}_1$). So
-          we do not change the rank of $\mathbf{a}_3$ but make the rank of $\mathbf{a}_4$ better (line \ref{lst:gg1} - \ref{lst:gg2} in Procedure \ref{alg:sort}). So  $\mathbf{a}_1$,  $\mathbf{a}_4$ and  $\mathbf{a}_3$ are given rank 2, but $\mathbf{a}_4$ is now earlier in the sequence than $\mathbf{a}_3$. Hence there is an inherent ordering even when algorithms share the same rank. With this step, a single pass of bubble sort has been completed. Every pass of bubble sort pushes the slowest algorithm to the end of the sequence. Now, the current sequence is $<\mathbf{a}_2, \mathbf{a}_1, \mathbf{a}_4, \mathbf{a}_3>$.
+       \item
+         \p{I would start with: ``In the last comparison of the first sweep, [line xyz], Algorithm $\mathbf{a}_4$ results
+           to be better ...'' -- and then remove ``With this step, a single pass.... completed.''}
+         Algorithm $\mathbf{a}_4$ results to be better than $\mathbf{a}_3$, so their positions are
+          swapped. However, ranks cannot be exchanged the same way it happened in step 1,
+          as $\mathbf{a}_3$ would receive rank 3, even though it was evaluated to be
+          as good as $\mathbf{a}_1$, which has rank 2 (recall from step 2: $\mathbf{a}_3 \sim \mathbf{a}_1$). So
+          instead of changing the rank of $\mathbf{a}_3$, the rank of $\mathbf{a}_4$ is improved (line \ref{lst:gg1} -
+          \ref{lst:gg2} in Procedure \ref{alg:sort}). Thus  $\mathbf{a}_1$,  $\mathbf{a}_4$ and  $\mathbf{a}_3$ are
+          given rank 2, but $\mathbf{a}_4$ is now earlier in the sequence than $\mathbf{a}_3$. This indicates that there
+          is an inherent ordering even when algorithms share the same rank.
+          With this step, a single pass of bubble sort has been completed.
+          Every pass of bubble sort pushes the slowest algorithm to the end of the sequence.
+          At this point, the current sequence is $<\mathbf{a}_2, \mathbf{a}_1, \mathbf{a}_4, \mathbf{a}_3>$.
 		
 	\item
-		   In the second pass of bubble sort the last algorithm in sequence is left out and the adjacent algorithms starting from the first in sequence are again compared. The first two algorithm $\mathbf{a}_2$ and $\mathbf{a}_1$ were already compared in Step 1. So now, we compare  $\mathbf{a}_1$ and $\mathbf{a}_4$.
+          In the second pass of bubble sort the last algorithm in sequence is left out and the adjacent algorithms
+          starting from the first in sequence are again compared. The first two algorithm $\mathbf{a}_2$ and
+          $\mathbf{a}_1$ were already compared in Step 1. So now, the next comparison is $\mathbf{a}_1$ vs.~$\mathbf{a}_4$.
           Algorithm $\mathbf{a}_4$ results to be better than $\mathbf{a}_1$, so the algorithms are swapped as usual. However, the
           algorithms currently share the same rank. Since $\mathbf{a}_4$ reached the top of its performance
           class---having defeated all the other algorithms with the same rank---it should now get a higher rank than the
           other algorithms in its class. Therefore, the rank of $\mathbf{a}_1$ and $\mathbf{a}_3$ is incremented by 1
-          (line \ref{lst:h1}-\ref{lst:h2} in Procedure \ref{alg:sort}). So $\mathbf{a}_4$ stays at rank 2, and $\mathbf{a}_1$ and $\mathbf{a}_3$ receive rank 3. This completes the second pass of bubble sort and the two slowest algorithms have been pushed to the end of sequence.
+          (line \ref{lst:h1}-\ref{lst:h2} in Procedure \ref{alg:sort}): $\mathbf{a}_4$ stays at rank 2, and $\mathbf{a}_1$ and $\mathbf{a}_3$ receive rank 3. This completes the second pass of bubble sort and the two slowest algorithms have been pushed to the end of sequence.
 	
 	\item
-          In the next pass, we again start from the first element in sequence and continue the pair-wise comparisons until the third last element. This leaves us with only one comparison to be done -- algorithm  $\mathbf{a}_4$ and $\mathbf{a}_2$.
+          In the next pass,
+          \p{``in the third and final pass,''}
+          we again start from the first element in sequence and continue the pair-wise comparisons until the third last
+          element. This leaves only one comparison to be done, $\mathbf{a}_4$ vs.~$\mathbf{a}_2$.
           Algorithm $\mathbf{a}_4$ is evaluated to be as good as $\mathbf{a}_2$, so both are given the same rank and the positions are not swapped. The ranks of algorithms occurring later than $\mathbf{a}_4$ in the sequence are decremented by 1 (this is the same rule applied in step 2). Thus,
           the final sequence is $<\mathbf{a}_2, \mathbf{a}_4, \mathbf{a}_1, \mathbf{a}_3>$. Algorithms $\mathbf{a}_2$ and $\mathbf{a}_4$ obtain rank 1, and $\mathbf{a}_1$ and $\mathbf{a}_3$ obtain rank 2.
 \end{enumerate}
@@ -413,10 +486,11 @@ All the algorithms $\mathbf{a}_1, \mathbf{a}_2, .., \mathbf{a}_p \in \mathcal{A}
 
 All the algorithms with rank 1 are assigned to the set of fastest algorithms $\mathcal{F}$. From the above illustration,
 $\mathcal{F} \leftarrow \{\mathbf{a_2}, \mathbf{a_4}\}$. Recall that the results of the Compare Function (Procedure \ref{alg:compare}) are not entirely deterministic due to non-transitivity of comparisons. As a consequence, the final ranks obtained by Procedure \ref{alg:sort} are also not entirely deterministic.
-For instance, in step 5, algorithm $\mathbf{a_4}$ could be at the threshold  of being better than $\mathbf{a_2}$; that is, if $\mathbf{a_4}$ was
-estimated to be better than $\mathbf{a_2}$ once in every two runs of Procedure \ref{alg:sort}, then fifty percent of the times
-$\mathbf{a_2}$ would be pushed to rank 2 and would not be assigned to $\mathcal{F}$. To address this, we repeat the Sort function 
-$T$ times and in each iteration, all the algorithms that received rank 1 are accumulated in the list $L$. Then, we follow the steps from line 5-9 in Procedure \ref{alg:fa} to compute the relative score. If an
+For instance, in step 5, algorithm $\mathbf{a_4}$ could be at the threshold  of being better than $\mathbf{a_2}$;
+that is, if $\mathbf{a_4}$ were estimated to be better than $\mathbf{a_2}$ once in every two runs of Procedure \ref{alg:sort}, then fifty percent of the times
+$\mathbf{a_2}$ would be pushed to rank 2 and would not be assigned to $\mathcal{F}$. To address this, the Sort function
+is repeated
+$T$ times and in each iteration all the algorithms that received rank 1 are accumulated in the list $L$. Then, we follow the steps from line 5-9 in Procedure \ref{alg:fa} to compute the relative score. If an
 algorithm $\mathbf{a_j}$ was assigned rank 1 in $c$ out of $T$ iterations, then $\mathbf{a_j}$ would appear $c$ times in
 the list $L$. Then, the relative confidence (or relative score) for $\mathbf{a_j}$ is $c/T$. 
 %Notice that no bootstrapping is done in each of the $T$ iterations (as it was done in Procedure \ref{alg:fa}). The Sort function is repeated only to address the randomness in the final rankings and not to extract more information from the distribution (which is the objective of Bootstrapping that was addressed in the Compare function). 
@@ -444,7 +518,8 @@ candidates that were not assigned rank 1 even once are given a relative score of
 		\EndFor
 		\State return $(\mathcal{F} \times C)$
               \end{algorithmic}
-%              \p{same comments apply. Do not use L.append, loops with "for i", syntax, ...}
+              % \p{same comments apply. Do not use L.append, loops with "for i", syntax, ...}
+              \p{syntax still to be fixed $==$, square brackets. Also SPELL CHECK everything!}
 \end{algorithm}
 
 \section{Experiments}
@@ -557,7 +632,7 @@ that one algorithm dominates the other. The tolerance level up to which two algo
 is controlled by adjusting the $threshold$ parameter in the Compare function. When $threshold=0.5$, the tolerance level is 0 and the outcome $\sim$ in the Compare function is still impossible. When the relative scores are computed with the setting  $M=30$ and $threshold=0.5$, $\mathbf{a}_0$ obtained a score 0 and was strictly not assigned to $\mathcal{F}$.  When $threshold$ is increased, the conditions for one algorithm to be ranked better than the other in Procedure \ref{alg:sort} becomes stricter and as a result, it becomes difficult for $\mathbf{a}_0$ and $\mathbf{a}_2$ to be ranked better than $\mathbf{a}_1$. Therefore, as $threshold$ increased, the relative score of $\mathbf{a}_1$ became higher (see Table \ref{tab:1}), which meant it was assigned with rank 1 more frequently across different repetitions of the  Sort function in Procedure \ref{alg:f}. $\mathbf{a}_3$ still obtained relative score 0; because, its difference from other distributions are noticeable.
 
 
-The "tolerance" level is also impacted by the parameter $K$ in Procedure \ref{alg:compare}, which is the number of measurements sampled in each of the $M$ bootstrap iteration. In every iteration of comparing two algorithms $(\mathbf{a_i}, \mathbf{a_j})$, the minimum execution time $(e_i,e_j)$ of the samples ($\mathbf{\tilde{a}_i} \subset \mathbf{a_i}$, $\mathbf{\tilde{a}_j} \subset \mathbf{a_j}$) are computed. As $K \to N (=50)$, the minimum of the samples $(\mathbf{\tilde{a}_i},\mathbf{\tilde{a}_j)}$ would approximate the minimum of the distributions $(\mathbf{a_i}, \mathbf{a_j})$. As a consequence, when $K=50$, the evaluation of $e_i \le e_j$ in the Compare function becomes deterministic and $\sim$ would become an impossible outcome. For Setting 1 in Table \ref{tab:2}, $\mathbf{a}_1$ recorded the least execution time; therefore, as $K \to 50$, the relative score of $\mathbf{a}_1$ approaches 1.0, while the scores of $\mathbf{a}_0$ and $\mathbf{a}_2$ approach 0 (see Figure \ref{fig:k}). 
+The ``tolerance" level is also impacted by the parameter $K$ in Procedure \ref{alg:compare}, which is the number of measurements sampled in each of the $M$ bootstrap iteration. In every iteration of comparing two algorithms $(\mathbf{a_i}, \mathbf{a_j})$, the minimum execution time $(e_i,e_j)$ of the samples ($\mathbf{\tilde{a}_i} \subset \mathbf{a_i}$, $\mathbf{\tilde{a}_j} \subset \mathbf{a_j}$) are computed. As $K \to N (=50)$, the minimum of the samples $(\mathbf{\tilde{a}_i},\mathbf{\tilde{a}_j)}$ would approximate the minimum of the distributions $(\mathbf{a_i}, \mathbf{a_j})$. As a consequence, when $K=50$, the evaluation of $e_i \le e_j$ in the Compare function becomes deterministic and $\sim$ would become an impossible outcome. For Setting 1 in Table \ref{tab:2}, $\mathbf{a}_1$ recorded the least execution time; therefore, as $K \to 50$, the relative score of $\mathbf{a}_1$ approaches 1.0, while the scores of $\mathbf{a}_0$ and $\mathbf{a}_2$ approach 0 (see Figure \ref{fig:k}). 
 \begin{figure}[h!]
 	\includegraphics[width=0.5\textwidth]{fig/k}
 	\caption{Relative Score vs $K$ \\ $T$=500, $M$=30, $threshold$=0.9}
@@ -596,7 +671,7 @@ Consider an instance where $\mathcal{F}_{50}:\{\mathbf{a}_0,\mathbf{a}_2\}$ and 
 \end{table}
  Table \ref{tab:3} shows the precision and recall values averaged for 25 different linear algebra expressions (taken from \cite{barthels2019linnea}) arising in practical applications.  It can be seen that the precision improves considerably when $M=30$ even with zero tolerance (i.e., $threshold = 0.5$). Furthermore, both precision and recall improves (even for lower $N$) as $threashold$ is increased.
  
- However, recall that higher values of $threshold$ implies higher "tolerance" or stricter conditions for one algorithm to be ranked better than the other; this means, the outcome $\sim$ in the Compare function becomes more and more likely and as a result more algorithms get clustered with same rank even when there is a marginal overlap of distributions. For e.g., at $M=30$ and $threshold=0.5$,  $\mathcal{F}_{50}$: $\{(\mathbf{a}_0,1.0),(\mathbf{a}_2,1.0)\}$ where the second element in the tuple is relative score; but when $threshold$ is increased to 0.9, $\mathcal{F}_{50}$: $\{(\mathbf{a}_0,1.0),(\mathbf{a}_1,0.8), (\mathbf{a}_2,1.0), (\mathbf{a}_3,0.9)\}$, where two more  algorithms $\mathbf{a}_1$ and $\mathbf{a}_3$ are assigned to $\mathcal{F}_{50}$ with a fairly high relative score. When $threshold = 0.8$, $\mathcal{F}_{50}$: $\{(\mathbf{a}_0,1.0),(\mathbf{a}_1,0.3), (\mathbf{a}_2,1.0), (\mathbf{a}_3,0.5)\}$, $\mathbf{a}_1$ and $\mathbf{a}_3$ are still assigned but their relative scores are reduced. Therefore, as $threshold$ becomes too high, discriminating algorithms based on relative scores (chance of being the fastest algorithm) becomes more difficult.
+ However, recall that higher values of $threshold$ implies higher ``tolerance" or stricter conditions for one algorithm to be ranked better than the other; this means, the outcome $\sim$ in the Compare function becomes more and more likely and as a result more algorithms get clustered with same rank even when there is a marginal overlap of distributions. For e.g., at $M=30$ and $threshold=0.5$,  $\mathcal{F}_{50}$: $\{(\mathbf{a}_0,1.0),(\mathbf{a}_2,1.0)\}$ where the second element in the tuple is relative score; but when $threshold$ is increased to 0.9, $\mathcal{F}_{50}$: $\{(\mathbf{a}_0,1.0),(\mathbf{a}_1,0.8), (\mathbf{a}_2,1.0), (\mathbf{a}_3,0.9)\}$, where two more  algorithms $\mathbf{a}_1$ and $\mathbf{a}_3$ are assigned to $\mathcal{F}_{50}$ with a fairly high relative score. When $threshold = 0.8$, $\mathcal{F}_{50}$: $\{(\mathbf{a}_0,1.0),(\mathbf{a}_1,0.3), (\mathbf{a}_2,1.0), (\mathbf{a}_3,0.5)\}$, $\mathbf{a}_1$ and $\mathbf{a}_3$ are still assigned but their relative scores are reduced. Therefore, as $threshold$ becomes too high, discriminating algorithms based on relative scores (chance of being the fastest algorithm) becomes more difficult.
  
  \ar{Aravind got here}
  
@@ -616,7 +691,7 @@ The typical development of linear algebra code involves a lot of trial and error
 of several possible alternatives. In order to automate code development, \p{languages such as ...} and compilers such as
 Linnea~\cite{barthels2019linnea} were developed to automatically decompose a mathematical expression into sequences of
 library calls. 
-The selection of best algorithm can be guided by models that predict relative performance. Therefore, a natural extension to this work would be "Relative Performance modelling", where we aim to automatically predict (or model) the relative scores without having to execute all the algorithms.
+The selection of best algorithm can be guided by models that predict relative performance. Therefore, a natural extension to this work would be ``Relative Performance modelling", where we aim to automatically predict (or model) the relative scores without having to execute all the algorithms.
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
