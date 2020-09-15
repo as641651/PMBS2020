@@ -82,7 +82,7 @@ pauldj@cs.umu.se}
   algorithm in absolute terms, we present a measurement-based approach that assigns a relative score to the algorithms
   in comparison to one another. The relative performance is encoded by sorting the algorithms based on pair-wise
   comparisons and ranking them into equivalence classes, where more than one algorithm can obtain the same rank. We show
-  that the relative performance leads to reliable identification of the fastest algorithms even with noisy system
+  that the relative performance leads to robust identification of the fastest algorithms, that is, reliable identifications even with noisy system
   conditions.
 \end{abstract}
 
@@ -243,19 +243,18 @@ A ``straightforward'' approach to relatively score algorithms consists in findin
 	\label{alg:fa}
 	\hspace*{\algorithmicindent} \textbf{Input: } $ \mathbf{a}_1,\mathbf{a}_2 ,\dots, \mathbf{a}_p\in \mathcal{A}$ \\
 	\hspace*{\algorithmicindent} \textbf{Output: } $ (f_1,c_1), (f_2, c_2), \dots, (f_q,c_q) \in \mathcal{F} \times C  $
-        \p{do you need $\langle$ in the output? : $\langle (f_1,c_1), ... $}
 	\begin{algorithmic}[1] 
 		\State $L, C \leftarrow [ \quad ]$ \Comment{Initialize empty lists}
 		\For{i = 1, $\dots$, $T$}
-		\State sample $K$ values $\mathbf{\tilde{a}_{j}} \subset \mathbf{a_j} \quad \forall j$ \Comment{$ j \in \{1,\dots,p\}$} 
-		\State $ f \leftarrow \underset{j}{\mathrm{arg\,min}}(\min(\mathbf{\tilde{a}}_j ))$
-                \p{argmin is a single word -- do we actually need the min in argmin(MIN())? isn't argmin doing it already?}
+		\State $\mathbf{\tilde{a}_j} \leftarrow K $ values sampled from $\mathbf{a}_j \quad \forall j \in \{1,\dots,p\}$ 
+%		\State sample $K$ values $\mathbf{\tilde{a}_{j}} \subset \mathbf{a_j} \quad \forall j$ \Comment{$ j \in \{1,\dots,p\}$} 
+		\State $ f \leftarrow \underset{j}{\mathrm{argmin}}(\min(\mathbf{\tilde{a}}_j) | \forall j) \quad \mathbf{\tilde{a}}_j \in \mathbb{R}^{K}$
 	    \State append$(f,L)$
                 % \State append($\tilde{\mathcal{F}},L$)
 		\EndFor
 		\State $\mathcal{F} \leftarrow $ unique elements in $L$ \Comment{ $q = |\mathcal{F}| $}
-		\For{$i$ in  $f_1,f_2,\dots,f_q \in \mathcal{F}$}
-		\State $c \leftarrow$ number of occurrences of $i$ in $L$ 
+		\For{i = 1, $\dots$, q }
+        \State $c \leftarrow$ number of occurrences of $f_i$ in $L$ $\quad f_i \in \mathcal{F}$
 		\State append($c/T, C$)
 		\EndFor
 		\State return $(\mathcal{F} \times C)$
@@ -310,11 +309,9 @@ distributions are performance-wise equivalent.
 	\hspace*{\algorithmicindent} \textbf{Output } $\in  \{<,>,\sim \}$
 	\begin{algorithmic}[1] 
 		\State $p \leftarrow 0$
-		\For{i = 1, $\dots$, $M$}
-		\State sample $K$ values $\mathbf{\tilde{a}_i} \subset \mathbf{a_i}$
-                \p{can we rewrite it to give a better idea that $\mathbf{\tilde{a}_i} \subset \mathbf{a_i}$?  e.g., \\
-                  $\mathbf{\tilde{a}_i} \leftarrow K$ values sampled from $\mathbf{a_i}$?}
-		\State sample $K$ values $\mathbf{\tilde{a}_j} \subset \mathbf{a_j}$
+		\For{m = 1, $\dots$, $M$}
+        \State $\mathbf{\tilde{a}_i} \leftarrow K$ values sampled from $\mathbf{a_i}$
+        \State $\mathbf{\tilde{a}_j} \leftarrow K$ values sampled from $\mathbf{a_j}$
 		\State $e_i$ = min($\mathbf{\tilde{a}_i}$)
 		\State $e_j$ = min($\mathbf{\tilde{a}_j}$)
 		\If{$e_i \le e_j$}
@@ -404,13 +401,15 @@ ranks $r_j \leftarrow j$ (where $j \in\{1,2,\dots,p\}$) according to the order i
 $.
 Initially, the number of equivalence classes $w$ is same as the number of algorithms $p$. As more than one algorithm
 can obtain the same rank, we use different index array to map to the position of algorithms in the sorted sequence
-$\mathcal{S} : \langle \mathbf{s}_1, \mathbf{s}_2, \dots, \mathbf{s}_p \rangle$. In the beginning, $s_j \leftarrow j$ and $
-\mathbf{a}_{s[j]} \leftarrow \mathbf{a}_j$.
-\p{I got lost. What is ${a}_{s[j]}$? What do the [ ] mean?} 
-Thus, Procedure \ref{alg:sort} sorts the initial sequence $\langle (\mathbf{a}_1,1), \dots, (\mathbf{a}_p,p) \rangle$ and returns $\langle (\mathbf{a}_{s[1]},1), \dots, (\mathbf{a}_{s[p]},w) \rangle$.
-\p{this is not immediately clear to me. Then it has to be explained}
+$\mathcal{S} : \langle \mathbf{s}_1, \mathbf{s}_2, \dots, \mathbf{s}_p \rangle$. 
+Procedure \ref{alg:sort} sorts an initial sequence $\langle (\mathbf{a}_1,1), \dots, (\mathbf{a}_p,p) \rangle$ and returns $\langle (\mathbf{a}_{s[1]},1), \dots, (\mathbf{a}_{s[p]},w) \rangle$; for instance, if $\langle (\mathbf{a}_{2},1), (\mathbf{a}_{4},1) , (\mathbf{a}_{1},2), (\mathbf{a}_{3},2) \rangle$ is the returned sequence, $\mathbf{s}_1$ (or $\mathbf{s}[1]$) is the index of the first algorithm, which is 2, and this algorithm obtains rank 1. $\mathbf{s}_2$ is the second index, which is 4 with rank 1 and so on.
+%In the beginning, $s_j \leftarrow j$ and $
+%\mathbf{a}_{s[j]} \leftarrow \mathbf{a}_j$.
+%\p{I got lost. What is ${a}_{s[j]}$? What do the [ ] mean?} 
+%Thus, Procedure \ref{alg:sort} sorts the initial sequence $\langle (\mathbf{a}_1,1), \dots, (\mathbf{a}_p,p) \rangle$ and returns $\langle (\mathbf{a}_{s[1]},1), \dots, (\mathbf{a}_{s[p]},w) \rangle$.
+%\p{this is not immediately clear to me. Then it has to be explained}
 % and slots $s_j \leftarrow j$ , $ \mathbf{a}_{s[j]} \leftarrow \mathbf{a}_j$ where $j \in\{1,2,..p\}$; as more than one algorithm can obtain the same rank, we use different indices for positions (slots) of the algorithms ($s_j$) in the sorted sequence and ranks ($r_j$).  
- Starting from the first element in the sequence,  bubble sort\cite{bubblesort} compares adjacent algorithms and swaps
+ Starting from the first element of the initial sequence,  bubble sort\cite{bubblesort} compares adjacent algorithms and swaps
  indices if the algorithm occurring later in the sequence $\mathbf{a}_{s[j+1]}$ is better than its predecessor algorithm
  $\mathbf{a}_{s[j]}$ and the ranks are updated. To understand the rank update rules, consider the example in Fig
  \ref{fig:sort}, which shows the intermediate steps while sorting the distributions of four algorithms $\mathbf{a}_1,
@@ -494,18 +493,16 @@ candidates that were not assigned rank 1 even once are given a relative score of
 	\begin{algorithmic}[1] 
 		\State $L, C \leftarrow [ \quad ]$ \Comment{Initialize empty lists}
 		\For{i = 1, $\dots$, $T$}
-		\State $\mathcal{S}, R \leftarrow Sort(\mathcal{A})$
-                \p{I like to group the outputs, matlab's style:  $[S,R] \leftarrow Sort$; what are S and R?}
-		\State $\tilde{\mathcal{F}} \leftarrow (\mathbf{s}_j | r_j = 1 )$ \Comment{all algorithms with rank 1}
-                \p{should we use an action word such as "select( ... ) such that .. " ?}
-                \p{what are $r_j$?}
+		\State $[\mathcal{S}, R] \leftarrow Sort(\mathcal{A})$ \Comment{$\mathbf{s}_j \in \mathcal{S}, r_j \in R$  $\forall j \in \{1,\dots,p\}$}
+%		\State $\tilde{\mathcal{F}} \leftarrow (\mathbf{s}_j | r_j = 1 )$ \Comment{select all algorithms with rank 1}
+		\State select $\mathbf{s}_j \in \mathcal{S}$ such that $r_j = 1$
+%                \p{should we use an action word such as "select( ... ) such that .. " ?}
+%                \p{what are $r_j$?}
 		\State append($\tilde{\mathcal{F}}, L $)
 		\EndFor
 		\State $\mathcal{F} \leftarrow $ unique elements in $L$ \Comment{$ q = |\mathcal{F}|$}
-		\For{$i$ in  $f_1,f_2,\dots,f_q \in \mathcal{F}$}
-                \p{that's not what I meant. $i$ is the iterator. It loops from 1 to q. Then you pick $f_i$. Please fix
-                  the other procedures too.}
-		\State $c \leftarrow$ number of occurrences of $i$ in $L$ 
+		\For{i = 1, $\dots$, q }
+		\State $c \leftarrow$ number of occurrences of $f_i$ in $L$ $\quad f_i \in \mathcal{F}$
 		\State append($c/T$, $C$)
 		\EndFor
 		\State return $(\mathcal{F} \times C)$
