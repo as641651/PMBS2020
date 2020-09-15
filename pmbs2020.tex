@@ -493,7 +493,7 @@ candidates that were not assigned rank 1 even once are given a relative score of
 	\begin{algorithmic}[1] 
 		\State $L, C \leftarrow [ \quad ]$ \Comment{Initialize empty lists}
 		\For{i = 1, $\dots$, $T$}
-		\State $[\langle \mathbf{a}_j, r_j \rangle | \forall j] \leftarrow Sort(\mathcal{A})$ \Comment{$\forall j \in \{1,\dots,p\}$}
+		\State $[\langle (\mathbf{a}_j, r_j) | \forall j \rangle ] \leftarrow Sort(\mathcal{A})$ \Comment{$\forall j \in \{1,\dots,p\}$}
 %		\State $\tilde{\mathcal{F}} \leftarrow (\mathbf{s}_j | r_j = 1 )$ \Comment{select all algorithms with rank 1}
 		\State select $\mathbf{a}_j$ such that $r_j = 1$
 %                \p{should we use an action word such as "select( ... ) such that .. " ?}
