@@ -772,9 +772,26 @@ $\{(\mathbf{a}_0,1.0),(\mathbf{a}_1,0.8), (\mathbf{a}_2,1.0), (\mathbf{a}_3,0.9)
  
 \section{Conclusion and Future Outlook}
 \label{sec:con}
-We presented a methodology\footnote{Artifact can be found here: https://github.com/as641651/Relative-Performance  } to cluster and rank a set of equivalent algorithms into performance classes using a measurement-based approach that assigns a relative score to the algorithms in comparison to one another. We showed that the rankings are robust to operation settings and can be consistent in identifying the fast algorithms even when the number of measurements are decreased. 
+We presented a methodology to cluster and rank a set of equivalent algorithms into performance classes using a
+measurement-based approach that assigns a relative score to the algorithms in comparison to one another. We showed that
+the rankings are robust to operation settings \p{same comemnt as before: I don't understand what operation settings
+  are. ``environment''? ``computing environment'' ``computing conditions''?}
+and can be consistent in identifying the fast algorithms even when the
+number of measurements are decreased.\footnote{Code: https://github.com/as641651/Relative-Performance}
 
-Linear algebra operations that occur at the heart of most mathematical computations are one of the major computational bottlenecks.  In the past decade, we have witnessed an increasing number of latency-sensitive applications involving intelligent vehicles\cite{connectedvehicles}, real-time video analytics\cite{videoanalytics}, augmented reality\cite{arvr} etc., that require costly scientific computations on resource-constrained hardware. The usual solutions of past which involved offloading all the computations to a cloud is no longer a fully viable solution for these applications because of unacceptable communication latency between the cloud and end devices\cite{surveyMCC} \cite{towardsEdgeComputing}. Consequently, there is a trend toward "edge computing" \cite{edgeComputing2016} \cite{towardsEdgeComputing} \cite{edgeComputing2015}, where computations are shifted more and more towards the end devices (including smartphone, GPUs, Raspberry Pi etc.). For instance, a proof-of-concept platform that runs face recognition application in \cite{facerecog} shows that the response time is reduced from 900 to 169 ms by moving computation from cloud to the edge, or the resilience of a flying drone to atmospheric conditions can be improved if the on-board processor can compute a few extra gradient per second. Hence efficient computation of linear algebra operations, especially on devices that are usually subject to noisy operational setting and limited compute resources, are becoming more and more relevant.  
+
+Linear algebra operations occur at the heart of many mathematical computations and are one of the major computational
+bottlenecks.  In the past decade, we have witnessed an increasing number of latency-sensitive applications involving
+intelligent vehicles\cite{connectedvehicles}, real-time video analytics\cite{videoanalytics}, augmented
+reality\cite{arvr} etc., that require costly scientific computations on resource-constrained hardware. for these
+applications, the common approach
+of offloading all the computations to a cloud is no longer a fully viable solution because of unacceptable communication
+latency between the cloud and end devices~\cite{surveyMCC,towardsEdgeComputing}. Consequently, there is a trend toward
+``edge computing"~\cite{edgeComputing2016,towardsEdgeComputing,edgeComputing2015}, where computations are shifted more
+and more towards the end devices, which include smartphones, GPUs, Raspberry Pi, etc. For instance, a proof-of-concept
+platform that runs a face recognition application shows that the response time is reduced from 900 to
+169 ms by moving computation from cloud to the edge~\cite{facerecog}, or \p{``or'' is this still from the same paper? otherwise
+  the sentence does not make sense}  the resilience of a flying drone to atmospheric conditions can be improved if the on-board processor can compute a few extra gradient per second. Hence efficient computation of linear algebra operations, especially on devices that are usually subject to noisy operational setting and limited compute resources, are becoming more and more relevant.  
 
 %significant gains are realized when computations are shifted towards the edge of the network (including the local device)\cite{EdgeComputingQuantifying}.
 The typical development of linear algebra code involves a lot of trial and error in choosing the best implementation out
