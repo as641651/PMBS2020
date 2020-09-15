@@ -103,11 +103,11 @@ $\mathcal{F}$ compared to those in $\mathcal{A}/\mathcal{F}$. Instead of aiming 
 
 It is well known that execution times are influenced by many factors, and that repeated measurements, even with same input data and same cache conditions, often result in different execution times~\cite{peise2014cache,hoefler2010characterizing,peise2012performance}. Therefore, finding the best algorithm is a task that involves comparing distributions of execution time.
 %
-In common practice, time measurements are summarized into statistical estimates (such as minimum or median execution time), which are then used to compare algorithms~\cite{peise2019elaps}. But when system noise begins to have significant impact on program execution, it becomes difficult to summarize the performance into a single number; as a consequence, the comparisons are not consistent when the time measurements are reproduced, and this leads to inconsistency in the ranking of algorithms.
+In common practice, time measurements are summarized into statistical estimates (such as minimum or median execution time), which are then used to compare algorithms~\cite{peise2019elaps}. But when system noise begins to have significant impact on program execution, it becomes difficult to summarize the performance into a single number; as a consequence, the comparisons are not consistent when the time measurements are repeated, and this leads to inconsistency in the ranking of algorithms.
 In order for one algorithm to be better (or worse) than the other, there should be ``noticeable`` difference in their distributions (Figure \ref{fig:diff}). On the other hand, the performance of algorithms are comparable if their distributions are ``equivalent`` or have significant overlap (Figure \ref{fig:eq}). 
 %
 Therefore, the result of comparing two algorithms can fall into one of the three categories - better, worse or equivalent. 
-In this paper, we use this three-way comparison to cluster the set of algorithms $\mathcal{A}$ into performance classes and construct a ranking that is consistent (or robust) despite noisy system conditions. 
+In this paper, we use this three-way comparison to cluster the set of algorithms $\mathcal{A}$ into performance classes and construct a ranking that is consistent (or robust) despite noisy system conditions.
 %
 \begin{figure}[h!]
 	\centering
@@ -147,7 +147,7 @@ simulations but also for time-critical computations done on resource-constrained
 (e.g., instantaneous object detection for autonomous driving applications \cite{connectedvehicles}). A framework that
 chooses the best algorithm should take into consideration at-least the systematic noise factors, such as  regular
 interrupts, impacts of  other applications that are simultaneously sharing the resources, etc. Moreover, we observed that
-multiple algorithms can yield similar performance profiles. Therefore,  we develop a methodology for robust identification of not one, but a set of  fast algorithms for a given operational setting. To this end, we use the bootstrapping technique~\cite{bootstrap} to rank the set of equivalent algorithms $\mathcal{A}$ into clusters, where more than one algorithm can obtain the same rank.
+multiple algorithms can yield similar performance profiles. Therefore,  we develop a methodology for robust identification of not one, but a set of  fast algorithms for a given operational setting. To this end, we use the bootstrapping technique~\cite{bootstrap} to rank the set of equivalent algorithms $\mathcal{A}$ into clusters, where more than one algorithm can obtain the same rank. The robust rankings produced by our methodology can be used as a ground truth to train realistic performance models\footnote{The modelling and prediction of relative performance is the objective of our future work, and it is out of the scope of this article.} that can predict the ranks without executing all the algorithms.
 
 \textit{\textbf{Organization}}: In Sec.~\ref{sec:rel}, we highlight the challenges and survey the state of art. In
 Secs.~\ref{sec:torel} and~\ref{sec:met}, we introduce the idea behind relative performance, and describe a methodology
@@ -248,21 +248,21 @@ A ``straightforward'' approach to relatively score algorithms consists in findin
 		\For{i = 1, $\dots$, $T$}
 		\State $\mathbf{\tilde{a}_j} \leftarrow K $ values sampled from $\mathbf{a}_j \quad \forall j \in \{1,\dots,p\}$ 
 %		\State sample $K$ values $\mathbf{\tilde{a}_{j}} \subset \mathbf{a_j} \quad \forall j$ \Comment{$ j \in \{1,\dots,p\}$} 
-		\State $ f \leftarrow \underset{j}{\mathrm{argmin}}(\min(\mathbf{\tilde{a}}_j) | \forall j) \quad \mathbf{\tilde{a}}_j \in \mathbb{R}^{K}$
-                \p{$\forall j$ is not needed, $j$ is already bound in argmin}
-                \p{so the operation is: 1. take the min of the sub-samples; 2. take the min of mins; 3. return the index
-                of such alg. -- I feel that a short comment is needed}
+		\State $ f \leftarrow \underset{j}{\mathrm{argmin}}(\min(\mathbf{\tilde{a}}_j) | \forall j)$ \Comment{$\mathbf{\tilde{a}}_j \in \mathbb{R}^{K}$}
+%                \p{$\forall j$ is not needed, $j$ is already bound in argmin}
+%                \p{so the operation is: 1. take the min of the sub-samples; 2. take the min of mins; 3. return the index
+%                of such alg. -- I feel that a short comment is needed}
                 \State append$(f,L)$
                 % \State append($\tilde{\mathcal{F}},L$)
 		\EndFor
 		\State $\mathcal{F} \leftarrow $ unique elements in $L$ \Comment{ $q = |\mathcal{F}| $}
-		\For{i = 1, $\dots$, q }
-        \State $c \leftarrow$ number of occurrences of $f_i$ in $L$ $\quad f_i \in \mathcal{F}$
+		\For{i = 1, $\dots$, $q$ }
+        \State $c \leftarrow$ number of occurrences of $f_i$ in $L$ \Comment{$f_i \in \mathcal{F}$}
 		\State append($c/T, C$)
 		\EndFor
 		\State return $(\mathcal{F} \times C)$
               \end{algorithmic}
-\p{flush comments to the right margin (maybe with hfill?)}
+%\p{flush comments to the right margin (maybe with hfill?)}
 \end{algorithm}
 
 %Let $\mathcal{A}(x)$ be the set of all solution algorithms for certain linear algebra expression $x$. 
@@ -494,23 +494,23 @@ candidates that were not assigned rank 1 even once are given a relative score of
 	\begin{algorithmic}[1] 
 		\State $L, C \leftarrow [ \quad ]$ \Comment{Initialize empty lists}
 		\For{i = 1, $\dots$, $T$}
-		\State $[\langle (\mathbf{a}_j, r_j) | \forall j \rangle ] \leftarrow Sort(\mathcal{A})$ \Comment{$\forall j \in \{1,\dots,p\}$}
-                \p{still struggling with this Sort. It would really be better if the name was immediately identified as
-                  the sort from Procedure 3 -- I think we should have a slightly different name. SortBLAH. Then, we
-                  would not struggle to denote the output, which right now is superconvoluted. Now that I get it, I feel
-                  we need to replace $[\langle (\mathbf{a}_j, r_j) | \forall j \rangle ]$ with something easy to
-                  digest. Maybe we don't need output at all, just:\\
-                  $Sort(\mathcal{A})$\\
-                  Select algs with rank 1\\
-                 }
+		\State $\langle (\mathbf{a}_j, r_j) | \forall j \rangle  \leftarrow Sort(\mathcal{A})$ \Comment{$ j \in \{1,\dots,p\}$}
+%                \p{still struggling with this Sort. It would really be better if the name was immediately identified as
+%                  the sort from Procedure 3 -- I think we should have a slightly different name. SortBLAH. Then, we
+%                  would not struggle to denote the output, which right now is superconvoluted. Now that I get it, I feel
+%                  we need to replace $[\langle (\mathbf{a}_j, r_j) | \forall j \rangle ]$ with something easy to
+%                  digest. Maybe we don't need output at all, just:\\
+%                  $Sort(\mathcal{A})$\\
+%                  Select algs with rank 1\\
+%                 }
 % \State $\tilde{\mathcal{F}} \leftarrow (\mathbf{s}_j | r_j = 1 )$ \Comment{select all algorithms with rank 1}
-		\State select $\mathbf{a}_j$ such that $r_j = 1$
+		\State $\tilde{\mathcal{F}} \leftarrow$ select $\mathbf{a}_j$ such that $r_j = 1$
 %                \p{should we use an action word such as "select( ... ) such that .. " ?}
 %                \p{what are $r_j$?}
 		\State append($\tilde{\mathcal{F}}, L $)
 		\EndFor
 		\State $\mathcal{F} \leftarrow $ unique elements in $L$ \Comment{$ q = |\mathcal{F}|$}
-		\For{i = 1, $\dots$, q }
+		\For{i = 1, $\dots$, $q$ }
 		\State $c \leftarrow$ number of occurrences of $f_i$ in $L$ $\quad f_i \in \mathcal{F}$
 		\State append($c/T$, $C$)
 		\EndFor
@@ -529,9 +529,9 @@ family of algorithms, coded in the Julia language~\cite{julia}.  Fig.~\ref{fig:d
   Xeon E5-2680 v3 with 12 cores each and clock speed of 2.2 GHz running CentOS 7.7. Julia version 1.3 was linked against
   Intel MKL implementation of BLAS and LAPACK (MKL 2019 initial release).} of four equivalent algorithms $\mathbf{a}_0,
 \mathbf{a}_1, \mathbf{a}_2, \mathbf{a}_3 \in \mathbb{R}^{50}$ for the ordinary least square problem  $(X^TX)^{-1}X^{T}y$
-(pseudocode in Appendix A). The measurements were taken under two different settings. In the first setting, the number
+(pseudocode in Appendix A). In order to validate the consistency of the algorithms rankings to operating environments (or settings),  measurements were taken under two different settings. In the first setting, the number
 of threads was fixed to 24; in the second setting, the number of threads for each repetition of an algorithm was
-randomly chosen between 20 and 24. \p{should we give an intuition of why we did this? it is not apparent to me} In
+randomly chosen between 20 and 24. In
 Fig.~\ref{fig:d}, the distribution of $\mathbf{a}_0$ is compared against the distributions of the other algorithms.  The
 distributions of $\mathbf{a}_0, \mathbf{a}_1, \mathbf{a}_2$ are largely overlapping; they all perform the same number of
 floating point operations but differ in the order in which they execute matrix operations. Despite similar FLOP counts,
@@ -542,13 +542,13 @@ Algorithm $\mathbf{a}_3$ does twice the number of FLOPs than rest of the algorit
 \begin{figure}
 	\centering
 	\begin{subfigure}[b]{0.5\textwidth}
-		\includegraphics[width=1\linewidth]{fig/f_noise}
+		\includegraphics[width=1\linewidth]{fig/f_noise2}
 		\caption{Setting 1 : Number of threads is set to 24}
 		\label{fig:Ng1}
 	\end{subfigure}
 	
 	\begin{subfigure}[b]{0.5\textwidth}
-		\includegraphics[width=1\linewidth]{fig/f}
+		\includegraphics[width=1\linewidth]{fig/f2}
 		\caption{Setting 2 : Threads are randomly chosen between 20 - 24}
 		\label{fig:Ng2} 
 	\end{subfigure}
@@ -556,28 +556,25 @@ Algorithm $\mathbf{a}_3$ does twice the number of FLOPs than rest of the algorit
 	\label{fig:d}
 \end{figure}
 
-Recall that the relative scores \p{``produced/returned by Procedure 4''?} indicate the chance of an algorithm to be
+Recall that the relative scores returned by Procedure \ref{alg:f} indicate the chance of an algorithm to be
 assigned to the set of fast algorithms $\mathcal{F}$. In this example, one would naturally expect high scores for
 $\mathbf{a}_0, \mathbf{a}_1$ and $\mathbf{a}_2$. The assignments made to $\mathcal{F}$ are said to be robust or
-consistent or reproducible when they not largely influenced by operation setting \p{what do you mean with ``operation
-  setting''?} or when the number of measurements is reduced (from 50).
+consistent or reproducible when they not largely influenced by operation settings or when the number of measurements is reduced (from 50).
 
 \subsection{Robustness to Operation settings}
 
-In the introduction, we stated that rankings 
-that are based exclusively on a single statistic (such as minimum or mean
-execution time) to quantify performance
-lead to inconsistency when the measurements are reproduced.
-\p{``reproduced'' is really a bad word, as it has a different meaning associated to it.
-  Can we say instead elaborate along these lines?\\
-  we stated that if algorithms are ranked according to a single performance number (``statistic''?), such as minimum or mean
-  execution time, then the resulting ranking is highly sensitive to small changes to the input data. In other words, if
-  new data (``measurements'', or ``timings'') were acquired, it would result in a different ranking with a high likelihood.}
+In the introduction, we stated that if algorithms are ranked according to a single performance number, such as minimum or mean
+execution time, then the resulting ranking is highly sensitive to small changes to the input data. In other words, if
+new measurements were acquired, it would result in a different ranking with a high likelihood.
+%\p{``reproduced'' is really a bad word, as it has a different meaning associated to it.
+%  Can we say instead elaborate along these lines?\\
+%  we stated that if algorithms are ranked according to a single performance number (``statistic''?), such as minimum or mean
+%  execution time, then the resulting ranking is highly sensitive to small changes to the input data. In other words, if
+%  new data (``measurements'', or ``timings'') were acquired, it would result in a different ranking with a high likelihood.}
 Table \ref{tab:2} shows the distribution statistics of the algorithms $\mathbf{a}_0, \mathbf{a}_1, \mathbf{a}_2,
 \mathbf{a}_3$ for the two different execution settings. For setting 1, when considering the minimum execution time,
 $\mathbf{a}_1$ emerges as the best algorithm. However, if mean execution time is considered, then $\mathbf{a}_1$ is
-distinctly behind $\mathbf{a}_0$ and $\mathbf{a}_2$. Furthermore, when the measurements are reproduced \p{not reproduced!!
-  --  ``taken'', ``produced'', ``generated''}  under setting 2, both the minimum and the mean of $\mathbf{a}_1$ are somewhat
+distinctly behind $\mathbf{a}_0$ and $\mathbf{a}_2$. Furthermore, when the measurements are generated under setting 2, both the minimum and the mean of $\mathbf{a}_1$ are somewhat
 worse than those of $\mathbf{a}_0$ and $\mathbf{a}_2$.
 Hence, it is not clear whether or not $\mathbf{a}_1$ should be assigned to $\mathcal{F}$.
 \begin{table}[h!]
@@ -600,9 +597,6 @@ Hence, it is not clear whether or not $\mathbf{a}_1$ should be assigned to $\mat
 	\end{center}
 \end{table}
 
-\p{I feel that this point is very important, and should appear already in the intro, and possibly in the
-  conclusion. In a nutshell, you are saying that work is an essential step to train performance models, as it generates
-  consistent/reliable ground truth.}
 One could argue that, despite the inconsistency, the best algorithm that is identified with a single statistic is indeed
 always one of the fastest algorithms ($\mathbf{a}_0$ or $\mathbf{a}_1$ or $\mathbf{a}_2$). However, often in practice the
 best algorithm has  to be identified without executing them; for this, realistic performance models are needed. Such
@@ -684,11 +678,9 @@ because its difference from the other distributions is noticeable.
 
 
 The ``tolerance" level is also impacted by the parameter $K$ in Procedure \ref{alg:compare}, which is the number of
-measurements sampled in each of the $M$ bootstrap iteration. In every iteration of comparing \p{``every iteration of
-  comparing''? I don't get it}  two algorithms $(\mathbf{a_i}, \mathbf{a_j})$, the minimum execution time $(e_i,e_j)$ of
+measurements sampled in each of the $M$ bootstrap iteration. Let $\mathbf{a_i}$ and $\mathbf{a_j}$ be the two algorithms to be compared. In each of the $M$ iteration, the minimum execution time $(e_i,e_j)$ of
 the samples ($\mathbf{\tilde{a}_i} \subset \mathbf{a_i}$, $\mathbf{\tilde{a}_j} \subset \mathbf{a_j}$) is computed. As
-$K \to N (=50)$, the minimum of the samples $(\mathbf{\tilde{a}_i},\mathbf{\tilde{a}_j)}$ would approximate \p{I don't
-  like ``approximate''; ``tend to''? ``approach''?} the minimum of the distributions $(\mathbf{a_i}, \mathbf{a_j})$. As a consequence, when $K=50$, the evaluation of $e_i \le e_j$ in the Compare function becomes deterministic and $\sim$ would become an impossible outcome. For Setting 1 in Table \ref{tab:2}, $\mathbf{a}_1$ recorded the lowest execution time; therefore, as $K \to 50$, the relative score of $\mathbf{a}_1$ approaches 1.0, while the scores of $\mathbf{a}_0$ and $\mathbf{a}_2$ approach 0 (see Figure \ref{fig:k}). 
+$K \to N (=50)$, the minimum of the samples $(\mathbf{\tilde{a}_i},\mathbf{\tilde{a}_j)}$ would tend to the minimum of the distributions $(\mathbf{a_i}, \mathbf{a_j})$. As a consequence, when $K=50$, the evaluation of $e_i \le e_j$ in the Compare function becomes deterministic and $\sim$ would become an impossible outcome. For Setting 1 in Table \ref{tab:2}, $\mathbf{a}_1$ recorded the lowest execution time; therefore, as $K \to 50$, the relative score of $\mathbf{a}_1$ approaches 1.0, while the scores of $\mathbf{a}_0$ and $\mathbf{a}_2$ approach 0 (see Figure \ref{fig:k}). 
 \begin{figure}[h!]
 	\includegraphics[width=0.5\textwidth]{fig/k}
 	\caption{Relative Score vs $K$ \\ $T$=500, $M$=30, $threshold$=0.9}
@@ -700,31 +692,28 @@ Thus, higher values of $K$ invalidate the advantages of bootstrapping as the ran
 
 We evaluate the consistency or robustness of assignments made to $\mathcal{F}$ when the number of measurements $N$ of
 each algorithm decreases. Let $\mathcal{F}_{N}$ be the set of fastest algorithms identified with $N$ measurements of
-each algorithm. In Table~\ref{tab:3}, we report the average precision and recall (explained shortly) of
-$\mathcal{F}_{N<50} $ with respect to $\mathcal{F}_{50}$ for linear algebra expressions from 25 application examples
-(from \cite{barthels2019linnea}).
-\p{This sentence is repeated later, I don't see the need here}
-
+each algorithm. 
+%In Table~\ref{tab:3}, we report the average precision and recall (explained shortly) of
+%$\mathcal{F}_{N<50} $ with respect to $\mathcal{F}_{50}$ for linear algebra expressions from 25 application examples
+%(from \cite{barthels2019linnea}).
 %We consider the solutions to be less robust when the precision is low. 
-Consider an instance \p{instance of what? are we talking about one of those 25 examples?}
-obtained with $M=1$ (Procedure \ref{alg:fa})
+We use "precision" and "recall" metrics to evaluate consistency. 
+In order to understand how we use these evaluation metrics, consider an instance for which rankings are obtained with $M=1$ (Procedure \ref{alg:fa})
 where
 $\mathcal{F}_{50}:\{\mathbf{a}_0,\mathbf{a}_2\}$ and
 $\mathcal{F}_{20}:\{\mathbf{a}_0,\mathbf{a}_1,\mathbf{a}_2,\mathbf{a}_3,\mathbf{a}_4\}$.
-\p{is this hypothetical, or it comes from a specific example?} 
-When $N$ is decreased to 20, one finds less and less evidence \p{what are we looking at? is there data for this?} of one
+When $N$ is decreased to 20, one finds less and less evidence of one
 algorithm dominating the others; as a consequence, more algorithms manage to obtain rank 1 in at least one of the $T$
 iterations of Procedure \ref{alg:fa} and are assigned to $\mathcal{F}_{20}$.  We assume that $\mathcal{F}_{50}$ is the
 closer to the true solution than $\mathcal{F}_{N<50}$. When $\mathcal{F}_{20}$ is compared against $\mathcal{F}_{50}$,
 the set $\mathcal{F}_{20}$ has  $\{\mathbf{a}_0,\mathbf{a}_2\}$ as true positives ($TP$),
 $\{\mathbf{a}_1,\mathbf{a}_3,\mathbf{a}_4\}$  as false positives ($FP$) and there are no false negatives
-($FN$). Therefore, the precision and recall for this example are 0.4 and 1.0, respectively.\footnote{Precision =
-  $TP/(TP+FP)$. Recall = $TP/(TP+FN)$. \p{Maybe point out that $0\le prec \le 1$? same for recall}}
+($FN$). Therefore, the precision and recall for this example are 0.4 and 1.0, respectively.\footnote{precision =
+  $TP/(TP+FP)$. recall = $TP/(TP+FN)$.\\ $0\le$ precision, recall $\le 1$}
 
 We argue that for robustness, precision is a more important evaluation metric than recall; when the precision is low but
 recall is high, although all the fastest algorithms are identified at a lower $N$ (resulting in a high recall score),
-$\mathcal{F}_{20}$ is cluttered with false positives. \p{Here we need something like ``Vice versa, blah blah'' or ``On
-  the contrary,'' ...}  But for an instance $\mathcal{F}_{20} : \{\mathbf{a}_2\}$ obtained with $M=30$ and
+$\mathcal{F}_{20}$ is cluttered with false positives. On the contrary, for an instance $\mathcal{F}_{20} : \{\mathbf{a}_2\}$ obtained with $M=30$ and
 $threshold=0.5$, there is one false negative $\{\mathbf{a}_0\}$ and no false positives; thus, the precision is 1.0 and
 the recall is 0.5. Although not all the fastest algorithms are identified (resulting in a lower recall score), there are
 no false positives and hence the solutions are precise. A low recall is still not ideal when consistent solutions are expected, but precision is a more important evaluation metric. 
@@ -752,7 +741,7 @@ no false positives and hence the solutions are precise. A low recall is still no
 	\end{center}
 \end{table}
 Table \ref{tab:3} shows the precision and recall values averaged for 25 different linear algebra expressions (taken from
-\cite{barthels2019linnea}) arising in practical applications. \p{repetition from the first paragraph -- kill here or there} It can be seen that the precision improves considerably when $M=30$ even with zero tolerance (i.e., $threshold = 0.5$). Furthermore, both precision and recall improve (even for low $N$) as $threshold$ increases.
+\cite{barthels2019linnea}) arising in practical applications. It can be seen that the precision improves considerably when $M=30$ even with zero tolerance (i.e., $threshold = 0.5$). Furthermore, both precision and recall improve (even for low $N$) as $threshold$ increases.
  
 Recall however that high values of $threshold$ imply stricter conditions for one algorithm to be ranked better than the
 other; this means thst the outcome $\sim$ in the Compare function becomes more and more likely and as a result more
@@ -774,8 +763,7 @@ $\{(\mathbf{a}_0,1.0),(\mathbf{a}_1,0.8), (\mathbf{a}_2,1.0), (\mathbf{a}_3,0.9)
 \label{sec:con}
 We presented a methodology to cluster and rank a set of equivalent algorithms into performance classes using a
 measurement-based approach that assigns a relative score to the algorithms in comparison to one another. We showed that
-the rankings are robust to operation settings \p{same comemnt as before: I don't understand what operation settings
-  are. ``environment''? ``computing environment'' ``computing conditions''?}
+the rankings are robust to operating environments 
 and can be consistent in identifying the fast algorithms even when the
 number of measurements are decreased.\footnote{Code: https://github.com/as641651/Relative-Performance}
 
@@ -790,8 +778,7 @@ latency between the cloud and end devices~\cite{surveyMCC,towardsEdgeComputing}.
 ``edge computing"~\cite{edgeComputing2016,towardsEdgeComputing,edgeComputing2015}, where computations are shifted more
 and more towards the end devices, which include smartphones, GPUs, Raspberry Pi, etc. For instance, a proof-of-concept
 platform that runs a face recognition application shows that the response time is reduced from 900 to
-169 ms by moving computation from cloud to the edge~\cite{facerecog}, or \p{``or'' is this still from the same paper? otherwise
-  the sentence does not make sense}  the resilience of a flying drone to atmospheric conditions can be improved if the on-board processor can compute a few extra gradient per second. Hence efficient computation of linear algebra operations, especially on devices that are usually subject to noisy operational setting and limited compute resources, are becoming more and more relevant.  
+169 ms by moving computation from cloud to the edge~\cite{facerecog}. Hence efficient computation of linear algebra operations, especially on devices that are usually subject to noisy operational setting and limited compute resources, are becoming more and more relevant.  
 
 %significant gains are realized when computations are shifted towards the edge of the network (including the local device)\cite{EdgeComputingQuantifying}.
 The typical development of linear algebra code involves a lot of trial and error in choosing the best implementation out
