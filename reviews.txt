@@ -1,0 +1,96 @@
+Decision: Reject
+Submission: Robust Ranking of Linear Algebra Algorithms via Relative Performance
+Contributors: Bientinesi, Sankaran
+
+Key for the below column headings show
+Summary of Reviews of ws_pmbsf122s1	
+Reviewer	REL 	SND 	IMP 	ORGN 	PRES 	ACT 	CONF 	EXP
+Reviewer 1	HIGH (5)	HIGH (5)	MODERATE (4)	MODERATE (4)	LOW (3)	WEAK ACCEPT (4)	MODERATE (4)	MODERATE (4)
+Reviewer 2	HIGH (5)	HIGH (5)	MODERATE (4)	MODERATE (4)	HIGH (5)	ACCEPT (5)	MODERATE (4)	LOW (3)
+Reviewer 3	MODERATE (4)	HIGH (5)	MODERATE (4)	MODERATE (4)	MODERATE (4)	WEAK ACCEPT (4)	LOW (3)	LOW (3)
+Averages:	4.7	5.0	4.0	4.0	4.0	4.3	3.7	3.3
+
+
+
+ Review of ws_pmbsf122s1 by Reviewer 1 	top
+
+Summary
+
+    monospace
+    This paper is about categorizing mathematical algorithms from linear algebra into performance classes. The give a quick introduction into the problem domain, then describe the approach for the categorization of the algorithms w.r.t. to their relative performance. They analyze their approach in terms of robustness of the categorization.
+
+
+Detailed Comments
+
+    monospace
+    The paper contains only a few editing issues, yet it is hard to read and to understand. The main concern I have is with the very mathematical notation that hides a few interesting ideas of the presented approach. A different presentation style that explains the rational behind the mathematical design of the algorithm would make the paper more accessible.
+
+    From a technical standpoint, the paper seems sound, but omits one important factor or key assumption: it seems that the categorization of the linear algorithms assumes that the performance is portable across different architectures, execution environments, and available resources. With the measurements being conducted on one machine and the categorization happening then, it's unclear how the categorization would be useful on a different system setup. While this may not be a core contribution of this paper, the authors should make readers aware of this and maybe list potential improvements that may solve this issue.
+
+    Related to this is the section if the predicted relative performance categorization still is correct if the algorithms are adjusted in terms of parallelism, available memory bandwidth, etc. on the /same/ system that was used to gather the statistics. If the machine was exclusively used for running the benchmarking, it may happen that algorithms behave differently once the system is loaded with noisy neighbors.
+
+    Finally, the paper is silent about the time it takes to perform the categorization. It seems that each linear algorithm needs to run several times and if the search space is vast, the combinatorial exploration of the search space may cause a considerable overhead in time.
+
+
+Scored Review Questions
+
+	REL 	SND 	IMP 	ORGN 	PRES 	ACT 	CONF 	EXP
+ws_pmbsf122s1	HIGH (5)	HIGH (5)	MODERATE (4)	MODERATE (4)	LOW (3)	WEAK ACCEPT (4)	MODERATE (4)	MODERATE (4)
+
+
+
+
+
+Review of ws_pmbsf122s1 by Reviewer 2 	top
+
+Summary
+
+    monospace
+    This paper details a process for comparing performance of different linear algorithms. The aim is to characterise the relative performance of different algorithms so that a well-performing algorithm is chosen by high-level languages such as Julia and Tensorflow. Using performance data, different algorithms with similar performance characteristics are grouped together, and the different groups are then ranked by relative performance.
+
+    The paper is well-suited to the PMBS workshop. The technique presented here is not limited to linear algebra algorithms and would be useful for comparisons of other classes of algorithms. That said, the topic of linear algebra is relevant to many common HPC applications, so the technique as described would still be of wide interest.
+
+
+Detailed Comments
+
+    monospace
+    The paper is well organised and generally quite easy to follow. The use of colour mixing in Figures 1 and 3 to indicate areas where the bars of two different distributions overlap is not particularly clear. The paper emphases the applicability of the technique to linear algebra algorithms. From the title I expected to read an in-depth study of different linear algebra algorithms. It might be better to present the method as a more general method which could be used on any equivalent class of algorithms, the linear algebra study could then be used as an example of one possible application.
+
+
+Scored Review Questions
+
+	REL 	SND 	IMP 	ORGN 	PRES 	ACT 	CONF 	EXP
+ws_pmbsf122s1	HIGH (5)	HIGH (5)	MODERATE (4)	MODERATE (4)	HIGH (5)	ACCEPT (5)	MODERATE (4)	LOW (3)
+
+
+
+
+
+
+Review of ws_pmbsf122s1 by Reviewer 3 	top
+
+Summary
+
+    monospace
+    The authors present an interesting approach to ranking relative performance of linear algebra. BLAS and LAPACK are used as example to aid the discussion. Whilst I will not consider myself as an expert/knowledgeable in this field, I have not come across this type of approach before but can see the value of this approach in a production environment.
+
+    I feel this type of metric can be extended to other routines that are fundamental to robustness and performance. I think this potentially allows the opportunity to do relative performance modelling, something the authors have already identified as future work.
+
+
+Detailed Comments
+
+    monospace
+    1) Can the authors comment on how this can be integrated into choosing a selection of algorithms in a library like PETSc?
+
+    2) What happens when the performance/robustness is dependent on data, particularly when you are simulating a time dependent problem set during which the data flow will change consequently impacting on performance/robustness of the simulation ?
+
+    3) Can the authors comment on how this can be extended to mixed precision related work? If I wanted to run only a subset of the time steps in double precision as part of a simulation would this approach be able to accommodate this case?
+
+
+Scored Review Questions
+
+	REL 	SND 	IMP 	ORGN 	PRES 	ACT 	CONF 	EXP
+ws_pmbsf122s1	MODERATE (4)	HIGH (5)	MODERATE (4)	MODERATE (4)	MODERATE (4)	WEAK ACCEPT (4)	LOW (3)	LOW (3)
+
+
+ 
